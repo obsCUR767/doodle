@@ -24,6 +24,70 @@ bool bInit = false;
 
 unsigned int* buf( 0 );
 
+HDC currentHdc;
+void SetCurrentHdc(HDC _newHdc) { currentHdc = _newHdc; }
+HDC GetCurrentHdc() { return currentHdc;  }
+
+struct Vert2D
+{
+	Vert2D() : x(0), y(0), color(0) {}
+	union
+	{
+		struct
+		{
+			int x, y;
+		};
+		int v[2];
+	};
+	unsigned int color;
+};
+
+struct PointCloud2D
+{
+	Vert2D* vertBuf;
+	size_t numVerts;
+};
+struct IndexedPrimitive2D
+{
+	Vert2D* vertBuf;
+	size_t numVerts;
+
+	size_t* indexBuf;
+	size_t numIndexes;
+};
+void DrawPointCloud(PointCloud2D *p)
+{
+	for (size_t i = 0; i < p->numVerts; i++)
+		SetPixel(GetCurrentHdc(), p->vertBuf->x, p->vertBuf->y, p->vertBuf->color);
+}
+
+
+PointCloud2D* GeneratePCloud(int _num)
+{
+	PointCloud2D* p = (PointCloud2D*)malloc(sizeof(PointCloud2D));
+	p->vertBuf = (Vert2D*)malloc(_num * sizeof(Vert2D));
+	p->numVerts = _num;
+	return p;
+}
+
+void Init1PointCloud(PointCloud2D* pc)
+{
+	for (int i = 0; i < pc->numVerts; i++);
+
+}
+
+void DeletePCloud(PointCloud2D** p)
+{
+	free((*p)->vertBuf);
+	(*p)->numVerts = 0;
+	free(*p);
+	*p = 0;
+}
+
+void UpdatePointCloud(PointCloud2D* p, float fDeltaTime)
+{
+
+}
 
 void Draw(HWND hwnd, float fDeltaTime )
 {
@@ -42,7 +106,6 @@ void Draw(HWND hwnd, float fDeltaTime )
    float fRadius = 100.0f;
    tip.x = mid.x + (LONG)(fRadius * sinf( fAngle ));
    tip.y = mid.y + (LONG)(fRadius * cosf( fAngle ));
-
 
    SelectObject( hdc, GetStockObject( WHITE_PEN ) );
    MoveToEx( hdc, mid.x, mid.y, NULL );
@@ -125,9 +188,9 @@ void Aquire( HWND hwnd )
       buf = NULL;
    }
 
-//   buf = (unsigned int*)malloc( rect.
    printf( "rect dim: %d, %d\n", rect.bottom - rect.top, rect.left - rect.right );
 }
+
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
