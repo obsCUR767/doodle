@@ -90,7 +90,7 @@ void main(void)
 
    RegisterClass( &wndClass );
 
-   HWND hwnd = CreateWindow( APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 800, 500, 200, 100, GetDesktopWindow(), 0, GetModuleHandle( 0 ), 0 );
+   HWND hwnd = CreateWindow( APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 100, 100, 900, 400, GetDesktopWindow(), 0, GetModuleHandle( 0 ), 0 );
    ShowWindow( hwnd, SHOW_OPENWINDOW );
    UpdateWindow( hwnd );
 
