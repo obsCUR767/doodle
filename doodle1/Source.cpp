@@ -157,7 +157,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
    if( msg == WM_SIZE )
    {
       Aquire( hwnd );
-      printf( "WM_SIZE: %d\t%d\t%d\n", wParam, lParam >> 16, lParam & ((1<<16)-1));
+      printf( "WM_SIZE: %lld\t%lld\t%lld\n", wParam, lParam >> 16, lParam & ((1<<16)-1));
    }
 
    return DefWindowProc(hwnd, msg, wParam, lParam );

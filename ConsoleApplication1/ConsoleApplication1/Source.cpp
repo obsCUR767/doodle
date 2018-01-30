@@ -9,9 +9,9 @@ volatile unsigned int tick(1);
 DWORD WINAPI f(LPVOID _param)
 {
     DWORD contor = 1;
-    while(new(std::nothrow) char[256])
+    while(new(std::nothrow) char[1024])
     {
-//        Sleep(10);
+		Sleep(1);
         ++contor;
         InterlockedIncrement(&alocari);
     }
@@ -22,10 +22,17 @@ DWORD WINAPI f(LPVOID _param)
 
 DWORD WINAPI tickFunc(LPVOID _param)
 {
+	unsigned int alocPrev = alocari;
     do
     {
-        printf("alocari intermidiare: %d\n", alocari );
+        printf("alocari intermediare: %d\n", alocari );
         Sleep(1000);
+		if (alocPrev == alocari)
+		{
+			printf("alocari blocate %d\n", alocari);
+			break;
+		}
+		alocPrev = alocari;
     }
     while(tick);
 
@@ -34,29 +41,24 @@ DWORD WINAPI tickFunc(LPVOID _param)
 
 using namespace ::std;
 
-typedef list<char*> StringList;
-typedef vector<char*> StringVector;
-
 int main(int argc, char *argv[])
 {
-    StringList l(argv, argv+argc);
-    static const int NUMTHREADS(8);
-    DWORD threadIds[NUMTHREADS];
-    HANDLE threadHnd[NUMTHREADS];
+    static const int NUMTHREADS(64);
+    DWORD threadIds[NUMTHREADS], tickThdId;
+    HANDLE threadHnd[NUMTHREADS], tickThdHnd;
     
 
     printf("======tick======\n");
-    CreateThread(0, 0, tickFunc, 0, 0, 0 );
+	tickThdHnd = CreateThread(0, 0, tickFunc, 0, 0, &tickThdId );
 
     for(int i = 0; i < NUMTHREADS; i++ )
         threadHnd[i] = CreateThread(0, 0, f, 0, 0, threadIds + i );
     printf("====thdStart====\n");
-
-    scanf("");
 
     WaitForMultipleObjects(NUMTHREADS, threadHnd, 1, INFINITE );
     tick = 0;
 
     printf("alocari total la sfarsit: %d\n", alocari );
     scanf(" ");
+	
 }
