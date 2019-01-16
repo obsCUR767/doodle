@@ -14,6 +14,25 @@ LPCTSTR APPWNDCLASSNAME = _T( "MainAppWindow" );
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
+template <typename T> 
+inline T Ratio(T min, T max, T ratio)
+{
+    return (ratio - min)/(max - min);
+}
+
+template <typename T> 
+inline T Lerp(T min, T max, T ratio)
+{
+    return min + ratio * ( max - min );
+}
+template <typename T>
+
+inline T LerpInterval(T min, T max, T ratio, T minVal, T maxVal)
+{
+    return Lerp<T>(minVal, maxVal, Ratio<T>( min, max, ratio ));
+}
+
+
 float fTimeScale = 0.001f;
 float fSign = 1.0f;
 float fAngle = 0.0f;
@@ -86,7 +105,20 @@ void DeletePCloud(PointCloud2D** p)
 
 void UpdatePointCloud(PointCloud2D* p, float fDeltaTime)
 {
+    static float fLifeTime = 0.0f;
+    fLifeTime += fDeltaTime;
+    if(!p) return;
 
+    for(int i = 0; i < p->numVerts; i++)
+    {
+        float ratio = Ratio<float>(0.0f, (float)p->numVerts, (float)i);
+
+        float radius = Lerp<float>(ratio, 3.0f, 1.0f);
+        float phase = Lerp<float>(ratio, 3.0f, 1.0f);
+        float angle = Lerp<float>(ratio, 0.0f, 6.3f ); // 0.0..2*pi
+        p->vertBuf[i].x = radius;
+    }
+     
 }
 
 void Draw(HWND hwnd, float fDeltaTime )
