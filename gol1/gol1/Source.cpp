@@ -10,6 +10,14 @@
 #include "tchar.h"
 #include "windows.h"
 
+#include "zmath.h"
+
+#define TICK( tick )     LARGE_INTEGER tick;                    \
+                                QueryPerformanceCounter( &tick );      
+#define TOCK( tick, tock, msg )     LARGE_INTEGER tock;                    \
+                                QueryPerformanceCounter( &tock );          \
+                                printf( "%s %f sec\n", msg, (tock.QuadPart - tick.QuadPart) / (float)freq.QuadPart );
+
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -39,6 +47,16 @@ int v[SZX * SZY];
 
 POINT *vp;
 const int NPOINTS(10000);
+
+V3 *vBuf;
+
+
+
+V2 sq[4] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { 1.0f, -1.0f } };
+const float TIP( 3.0f );
+const float VAL( 1.0f );
+V2 star[8] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
+                  { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL} };
 
 
 void z()
@@ -93,8 +111,8 @@ void UpdatePoints( float fDeltaTime )
         float ratio = (float)i / NPOINTS;
         float r = MAX_RADIUS * ratio;
         float angle = ratio * 2.0f * (float)M_PI_2 * 100.0F;
-        vp[i].x = (LONG)(mid.x + r * cosf( angle + m_lifeTime * fTimeScale * fSign ));
-        vp[i].y = (LONG)(mid.y + r * sinf( angle + m_lifeTime * fTimeScale * fSign ));
+        vp[i].x = (LONG)(mid.x + (float)(( i % 2 ) ? r : ( r - (MAX_RADIUS * 0.05f ))) * cosf( angle + m_lifeTime * fTimeScale * fSign ));
+        vp[i].y = (LONG)(mid.y + (float)(( i % 2 ) ? r : ( r - (MAX_RADIUS * 0.05f ))) * sinf( angle + m_lifeTime * fTimeScale * fSign ));
     };
 
 }
@@ -125,6 +143,23 @@ void Loop(HWND hwnd)
 
 
 
+void Ding()
+{
+    const float RADIUS( 10.0f );
+    const float TURNS( 10.0f );
+    const float HEIGHT( 20.0f );
+
+    for( int i = 0; i < NPOINTS; i++ )
+    {
+        float ratio = (float)i/NPOINTS;
+        float angle = ratio * 2.0f * (float)M_PI * TURNS;
+        vBuf[i].x = RADIUS * cosf( angle );
+        vBuf[i].y = RADIUS * sinf( angle );
+        vBuf[i].z = ( ratio - 0.5f ) * HEIGHT;
+    }
+}
+
+
 void main(void)
 {
 	QueryPerformanceCounter(&first);
@@ -133,6 +168,9 @@ void main(void)
 	QueryPerformanceFrequency(&freq);
 
     vp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
+    vBuf = (V3*)malloc( sizeof( V3 ) * NPOINTS );
+
+    Ding();
 
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
@@ -168,6 +206,7 @@ void main(void)
 		}
 	} while (msg.message != WM_QUIT);
 
+    free( vBuf );
     free( vp );
 }
 
