@@ -145,6 +145,33 @@ float v4Len( V4 v )
 };
 
 
+void rotm2( float fAngle, M2* res )
+{
+    res->a00 = res->a11 = cosf(fAngle);
+    res->a10 = - ( res->a01 = sinf( fAngle ) );
+}
+
+void rotm3( float fAngle, M3* res )
+{
+    res->a00 = res->a11 = cosf( fAngle );
+    res->a10 = -( res->a01 = sinf( fAngle ) );
+}
+void translatem3( V2 tran, M3* res )
+{
+    res->a20 = tran.x;
+    res->a21 = tran.y;
+}
+
+void translatem3( V3 tran, M3* res )
+{
+    res->Z = tran;
+}
+
+void scalem2( V2 s, M2* res ) { res->a00 = s.x; res->a11 = s.y; }
+void scalem3( V3 s, M3* res ) { res->a00 = s.x; res->a11 = s.y; res->a22 = s.z; }
+void scalem4( V4 s, M4* res ) { res->a00 = s.x; res->a11 = s.y; res->a22 = s.z; res->a33 = s.w; }
+
+
 void mul2x2( M2 a, M2 b, M2* res )
 {
     res->a00 = a.a00 * b.a00 + a.a01 * b.a10;

@@ -40,10 +40,6 @@ HDC hdc;
 HDC hMemDC;
 HDC hBackDC;
 
-static const int SZX(100);
-static const int SZY(100);
-
-int v[SZX * SZY];
 
 POINT *vp;
 const int NPOINTS(10000);
@@ -58,20 +54,8 @@ const float VAL( 1.0f );
 V2 star[8] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
                   { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL} };
 
+M3 m2dProj;
 
-void z()
-{
-	float fLifeTime = (curr.QuadPart - first.QuadPart) / (float)freq.QuadPart;
-
-	for( int j = 0; j < SZY; j++ )
-		for (int i = 0; i < SZX; i++)
-		{
-			unsigned int r = ((unsigned int)(255.0f * sinf(((float)i / 100.0f) * 10.0f * (float)M_PI + fLifeTime))) << 16;
-			unsigned int b = ((unsigned int)(255.0f * sinf(((float)j / 100.0f) * 10.0f * (float)M_PI + fLifeTime))) << 8;
-			unsigned int g = (unsigned int)(255.0f * sinf(((float)( j *j + i * i ) / 100.0f) * 10.0f * (float)M_PI + fLifeTime)) << 0;
-			v[j * SZX + i] = r | g | b;
-		}
-}
 
 void Draw( float fDeltaTime)
 {
@@ -157,6 +141,8 @@ void Ding()
         vBuf[i].y = RADIUS * sinf( angle );
         vBuf[i].z = ( ratio - 0.5f ) * HEIGHT;
     }
+
+    m2dProj.initM3();
 }
 
 
@@ -217,6 +203,16 @@ void Aquire(HWND hwnd)
 	clRSize.y = clRect.bottom - clRect.top;
 
 	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
+
+    V3 scl;
+    V3 trn;
+    const float zoom( 10.0f );
+    scale.y = - ( scale.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.5 * ( 1.0f / zoom  ) );
+    trn.x = clRSize.x * 0.5f;
+    trn.y = clRSize.y * 0.5f;
+
+    scalem3( scl, &m2dProj );
+    translatem3( trn, &m2dProj );
 
     ReleaseDC( hwnd, hdc );
     ReleaseDC( hwnd, hMemDC );
