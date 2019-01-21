@@ -151,11 +151,34 @@ void rotm2( float fAngle, M2* res )
     res->a10 = - ( res->a01 = sinf( fAngle ) );
 }
 
+
+
 void rotm3( float fAngle, M3* res )
 {
     res->a00 = res->a11 = cosf( fAngle );
     res->a10 = -( res->a01 = sinf( fAngle ) );
 }
+
+void rotxm3(float fXAngle, M3* res)
+{
+	res->a11 = res->a22 = cosf(fXAngle);
+	res->a21 = -(res->a12 = sinf(fXAngle));
+}
+
+void rotym3(float fYAngle, M3* res)
+{
+	res->a00 = res->a22 = cosf(fYAngle);
+	res->a20 = -(res->a02 = sinf(fYAngle));
+}
+
+void rotzm3(float fZAngle, M3* res)
+{
+	res->a00 = res->a11 = cosf(fZAngle);
+	res->a10 = -(res->a01 = sinf(fZAngle));
+}
+
+
+
 void translatem3( V2 tran, M3* res )
 {
     res->a20 = tran.x;
@@ -218,6 +241,39 @@ void mul4x4( M4 a, M4 b, M4* res )
     res->a32 = a.a30 * b.a02 + a.a31 * b.a12 + a.a32 * b.a22 + a.a33 * b.a32;
     res->a33 = a.a30 * b.a03 + a.a31 * b.a13 + a.a32 * b.a23 + a.a33 * b.a33;
 };
+
+
+void translatem4(V3 tran, M4* res)
+{
+	res->a30 = tran.x;
+	res->a31 = tran.y;
+	res->a32 = tran.z;
+}
+
+void translatem4(V4 tran, M4* res)
+{
+	res->W = tran;
+}
+
+
+void rotxm4(float fXAngle, M4* res)
+{
+	res->a11 = res->a22 = cosf(fXAngle);
+	res->a21 = -(res->a12 = sinf(fXAngle));
+}
+
+void rotym4(float fYAngle, M4* res)
+{
+	res->a00 = res->a22 = cosf(fYAngle);
+	res->a20 = -(res->a02 = sinf(fYAngle));
+}
+
+void rotzm4(float fZAngle, M4* res)
+{
+	res->a00 = res->a11 = cosf(fZAngle);
+	res->a10 = -(res->a01 = sinf(fZAngle));
+}
+
 
 
 float dot2( V2 a, V2 b )

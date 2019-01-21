@@ -68,6 +68,14 @@ V2 star[] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL },
                   { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL}, 
                   { TIP, 0.0F } };
 
+V3 cubeVerts[] = {
+	{ 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },
+	{ 1.0f, 1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f }
+};
+
+size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
+
+
 M3 m2dProj;
 
 
@@ -133,10 +141,15 @@ void Draw( float fDeltaTime)
 
 
     M3 rot;rot.initM3();
-    rotm3( fAngle, &rot );
 
-    //DrawV3BufTran( v3buf, sizeof( v3buf)/sizeof(V3), &rot );
-    DrawV2BufTran( star, sizeof( star ) / sizeof( V2 ), &rot );
+	for (int i = 0; i < 10; i++)
+	{
+		rotm3(fAngle + ( (float)M_PI_2 * (float)i / 10.0f ) , &rot);
+
+		//DrawV3BufTran( v3buf, sizeof( v3buf)/sizeof(V3), &rot );
+		DrawV2BufTran(star, sizeof(star) / sizeof(V2), &rot);
+	}
+
 
 
     BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
@@ -253,7 +266,7 @@ void Aquire(HWND hwnd)
     V3 scl;
     V3 trn;
     const float zoom( 10.0f );
-    scl.y = - ( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.5f * ( 1.0f / zoom  ) );
+    scl.y = - ( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom  ) );
     trn.x = clRSize.x * 0.5f;
     trn.y = clRSize.y * 0.5f;
 
@@ -300,10 +313,10 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	if (msg == WM_KEYUP)
 	{
 		if (wParam == 'P')
-			fTimeScale *= 0.3f;
+			fTimeScale *= 0.2f;
 
 		if (wParam == 'O')
-			fTimeScale *= 3.0f;
+			fTimeScale *= 1.5f;
 
 		if (wParam == 'Q')
 			fSign = -fSign;
