@@ -11,6 +11,7 @@
 #include "windows.h"
 
 #include "zmath.h"
+#include "prim.h"
 
 #define TICK( tick )     LARGE_INTEGER tick;                    \
                                 QueryPerformanceCounter( &tick );      
@@ -46,16 +47,71 @@ const int NPOINTS(10000);
 
 V3 *vBuf;
 
+struct cacat
+{
+    float x;
+    char c;
+};
+
+V2 vbuf[ ] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f }, { 1.0f, -1.0f } };
+V3 v3buf[] = { { 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } };
+size_t ibuf[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
+
+
+IndexedPrim2D iSq;
 
 
 V2 sq[4] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { 1.0f, -1.0f } };
-const float TIP( 3.0f );
-const float VAL( 1.0f );
-V2 star[8] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
-                  { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL} };
+const float TIP( 5.0f );
+const float VAL( 0.30f );
+V2 star[] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
+                  { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL}, 
+                  { TIP, 0.0F } };
 
 M3 m2dProj;
 
+
+void DrawV2BufTran( V2* buf, int n, M3* tran )
+{
+    for( int i = 0; i < n; i++ )
+    {
+        V3 src;src.x = buf[i].x; src.y = buf[i].y; src.z = 1.0f;
+        V3 temp, temp1;
+        mulv3xm3( src, *tran, &temp );
+        mulv3xm3( temp, m2dProj, &temp1 );
+        vp[i].x = (LONG)( temp1.x );
+        vp[i].y = (LONG)( temp1.y );
+    }
+
+    Polyline( hMemDC, vp, n );
+}
+
+void DrawV3BufTran( V3* buf, int n, M3* tran )
+{
+    for( int i = 0; i < n; i++ )
+    {
+        V3 temp, temp1;
+        mulv3xm3( buf[i], *tran, &temp );
+        mulv3xm3( temp, m2dProj, &temp1 );
+        vp[i].x = (LONG)( temp1.x );
+        vp[i].y = (LONG)( temp1.y );
+    }
+
+    Polyline( hMemDC, vp, n );
+}
+
+void DrawV3Buf( V3* buf, int n )
+{
+    for( int i = 0; i < n; i++ )
+    {
+        V3 temp;
+        mulv3xm3( buf[i], m2dProj, &temp );
+        vp[i].x = (LONG)( temp.x );
+        vp[i].y = (LONG)( temp.y );
+    }
+
+    Polyline( hMemDC, vp, n );
+}
 
 void Draw( float fDeltaTime)
 {
@@ -74,31 +130,16 @@ void Draw( float fDeltaTime)
 //	MoveToEx(hMemDC, mid.x, mid.y, NULL);
 //	LineTo(hMemDC, tip.x, tip.y);
 
-    Polyline( hMemDC, vp, NPOINTS );
+
+
+    M3 rot;rot.initM3();
+    rotm3( fAngle, &rot );
+
+    //DrawV3BufTran( v3buf, sizeof( v3buf)/sizeof(V3), &rot );
+    DrawV2BufTran( star, sizeof( star ) / sizeof( V2 ), &rot );
+
 
     BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
-}
-
-void UpdatePoints( float fDeltaTime )
-{
-    static float m_lifeTime = 0.0f;
-    m_lifeTime += fDeltaTime;
-
-    POINT mid;
-    mid.x = clRSize.x / 2;
-    mid.y = clRSize.y / 2;
-
-    float MAX_RADIUS( ( sqrtf( (float)(clRSize.x * clRSize.x) + (float)(clRSize.y * clRSize.y) ) ) * 0.35f);
-
-    for( int i = 0; i < NPOINTS; i++ )
-    {
-        float ratio = (float)i / NPOINTS;
-        float r = MAX_RADIUS * ratio;
-        float angle = ratio * 2.0f * (float)M_PI_2 * 100.0F;
-        vp[i].x = (LONG)(mid.x + (float)(( i % 2 ) ? r : ( r - (MAX_RADIUS * 0.05f ))) * cosf( angle + m_lifeTime * fTimeScale * fSign ));
-        vp[i].y = (LONG)(mid.y + (float)(( i % 2 ) ? r : ( r - (MAX_RADIUS * 0.05f ))) * sinf( angle + m_lifeTime * fTimeScale * fSign ));
-    };
-
 }
 
 
@@ -122,7 +163,7 @@ void Loop(HWND hwnd)
 		fTraceTick = 0.0;
 	}
 
-    UpdatePoints(fDeltaTime);
+//    UpdatePoints(fDeltaTime);
 }
 
 
@@ -143,6 +184,11 @@ void Ding()
     }
 
     m2dProj.initM3();
+
+    iSq.iBuf = ibuf;
+    iSq.iBufSize = sizeof( ibuf )/sizeof(size_t)/2;
+    iSq.vBuf = vbuf;
+    iSq.vBufSize = sizeof( vbuf )/sizeof(V3);
 }
 
 
@@ -175,7 +221,7 @@ void main(void)
 
 	printf("ceak!\n");
 
-    UpdatePoints(0.0f);
+//    UpdatePoints(0.0f);
 
 	MSG msg;
 
@@ -207,7 +253,7 @@ void Aquire(HWND hwnd)
     V3 scl;
     V3 trn;
     const float zoom( 10.0f );
-    scale.y = - ( scale.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.5 * ( 1.0f / zoom  ) );
+    scl.y = - ( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.5f * ( 1.0f / zoom  ) );
     trn.x = clRSize.x * 0.5f;
     trn.y = clRSize.y * 0.5f;
 

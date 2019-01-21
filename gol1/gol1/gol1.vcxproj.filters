@@ -23,5 +23,8 @@
     <ClInclude Include="zmath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="prim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
