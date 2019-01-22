@@ -2,33 +2,43 @@
 
 union V2
 {
+    V2(): x(0.0f), y( 0.0f) {}
+    V2( float _x, float _y ) : x( _x ), y( _y ) {}
     struct
     {
         float x, y;
     };
     float v[2];
+    static const int CARD = 2;
 };
 
 union V3
 {
+    V3( ): x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
+    V3( float _x, float _y, float _z ): x( _x ), y( _y ), z( _z ) {}
     struct
     {
         float x, y, z;
     };
     float v[3];
+    static const int CARD = 3;
 };
 
 union V4
 {
+    V4( ): x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
+    V4( float _x, float _y, float _z, float _w ): x( _x ), y( _y ), z( _z ), w( _w ) {}
     struct
     {
         float x, y, z, w;
     };
     float v[4];
+    static const int CARD = 4;
 };
 
 union M2
 {
+    M2() { initM2(); }
     static const int CARD = 2;
     void initM2() { memset( a, 0, sizeof(a) ); for( int i = 0; i < CARD; i++ ) m[i][i] = 1.0f; }
     void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
@@ -58,6 +68,7 @@ union M2
 
 union M3
 {
+    M3( ) { initM3( ); }
     static const int CARD = 3;
     void tran() { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
     void initM3( ) 
@@ -95,6 +106,7 @@ union M3
 
 union M4
 {
+    M4( ) { initM4( ); }
     static const int CARD = 4;
     void initM4( ) { memset( a, 0, sizeof( a ) ); for( int i = 0; i < CARD; i++ ) m[i][i] = 1.0f; }
     void tran() { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }

@@ -78,6 +78,48 @@ size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 
 
 M3 m2dProj;
 
+V2* sproket1;
+size_t sproket1Size;
+
+V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
+{
+    size_t nTeethBufGeomSize;
+    float fAngleIncrement = (float)M_PI/(float)nNumTeeth;
+    float fAngle = 0.0f;
+    M2 rot;
+    *nBufSize = ( 4 * nNumTeeth + 1 );
+    V2* buf = (V2*)malloc( sizeof( V2 ) * *nBufSize );
+    float toothRatio( 1.0f - 1.0f / ( nNumTeeth/4 + 5.0f ));
+    V2 temp;
+    for( int i = 0; i < ( 2 * nNumTeeth ); i++, fAngle += fAngleIncrement )
+    {
+        rotm2( fAngle, &rot );
+        if( i % 2 )
+        {
+            temp.x = fRadius;
+            mulv2xm2( temp, rot, buf + ( i * 2 ) );
+            temp.x = fRadius * toothRatio;
+            mulv2xm2( temp, rot, buf + ( i * 2 + 1) );
+        }
+        else
+        {
+            temp.x = fRadius * toothRatio;
+            mulv2xm2( temp, rot, buf + ( i * 2 ) );
+            temp.x = fRadius;
+            mulv2xm2( temp, rot, buf + ( i * 2 + 1 ) );
+        }
+    }
+
+    rotm2( 0.0f, &rot );
+    temp.x = fRadius * toothRatio;
+    temp.y = 0.0f;
+    mulv2xm2( temp, rot, buf + ( *nBufSize ) - 1 );
+
+
+
+    return buf;
+}
+
 
 void DrawV2BufTran( V2* buf, int n, M3* tran )
 {
@@ -125,32 +167,13 @@ void Draw( float fDeltaTime)
 {
     BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
-    POINT mid, tip;
-	mid.x = (clRect.right - clRect.left) / 2;
-	mid.y = (clRect.bottom - clRect.top) / 2;
+	SelectObject(hMemDC, GetStockObject(WHITE_PEN));
 
 	fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
-	float fRadius = 100.0f;
-	tip.x = mid.x + (LONG)(fRadius * sinf(fAngle));
-	tip.y = mid.y + (LONG)(fRadius * cosf(fAngle));
+    M3 rot;
+    rotm3(fAngle, &rot);
 
-	SelectObject(hMemDC, GetStockObject(WHITE_PEN));
-//	MoveToEx(hMemDC, mid.x, mid.y, NULL);
-//	LineTo(hMemDC, tip.x, tip.y);
-
-
-
-    M3 rot;rot.initM3();
-
-	for (int i = 0; i < 10; i++)
-	{
-		rotm3(fAngle + ( (float)M_PI_2 * (float)i / 10.0f ) , &rot);
-
-		//DrawV3BufTran( v3buf, sizeof( v3buf)/sizeof(V3), &rot );
-		DrawV2BufTran(star, sizeof(star) / sizeof(V2), &rot);
-	}
-
-
+    DrawV2BufTran( sproket1, sproket1Size, &rot );
 
     BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
 }
@@ -169,6 +192,7 @@ void Loop(HWND hwnd)
 
 	Draw( fDeltaTime );
 
+
 	fTraceTick += fDeltaTime;
 	if (fTraceTick > 1.0)
 	{
@@ -176,7 +200,6 @@ void Loop(HWND hwnd)
 		fTraceTick = 0.0;
 	}
 
-//    UpdatePoints(fDeltaTime);
 }
 
 
@@ -202,6 +225,8 @@ void Ding()
     iSq.iBufSize = sizeof( ibuf )/sizeof(size_t)/2;
     iSq.vBuf = vbuf;
     iSq.vBufSize = sizeof( vbuf )/sizeof(V3);
+
+    sproket1 = GenSproket( 25, 2.0f, &sproket1Size );
 }
 
 
@@ -251,6 +276,7 @@ void main(void)
 		}
 	} while (msg.message != WM_QUIT);
 
+    if( sproket1 ) { free( sproket1 ); sproket1 = NULL; };
     free( vBuf );
     free( vp );
 }
