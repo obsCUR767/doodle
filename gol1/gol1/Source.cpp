@@ -75,6 +75,7 @@ V3 cubeVerts[] = {
 
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
+float zoom( 10.0f );
 
 M3 m2dProj;
 
@@ -83,28 +84,32 @@ size_t sproket1Size;
 
 V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
 {
-    size_t nTeethBufGeomSize;
+    size_t nTeethBufGeomSize, nCrownBufSize;
     float fAngleIncrement = (float)M_PI/(float)nNumTeeth;
     float fAngle = 0.0f;
     M2 rot;
-    *nBufSize = ( 4 * nNumTeeth + 1 );
-    V2* buf = (V2*)malloc( sizeof( V2 ) * *nBufSize );
+    nTeethBufGeomSize = ( 4 * nNumTeeth + 1 );
+    nCrownBufSize = (size_t)( fRadius * 0.66f ) + 4;
+    V2* buf = (V2*)malloc( sizeof( V2 ) * nTeethBufGeomSize );
     float toothRatio( 1.0f - 1.0f / ( nNumTeeth/4 + 5.0f ));
     V2 temp;
     for( int i = 0; i < ( 2 * nNumTeeth ); i++, fAngle += fAngleIncrement )
     {
-        rotm2( fAngle, &rot );
         if( i % 2 )
         {
+            rotm2( fAngle, &rot );
             temp.x = fRadius;
             mulv2xm2( temp, rot, buf + ( i * 2 ) );
+            rotm2( fAngle + 0.02f, &rot );
             temp.x = fRadius * toothRatio;
             mulv2xm2( temp, rot, buf + ( i * 2 + 1) );
         }
         else
         {
+            rotm2( fAngle - 0.02f, &rot );
             temp.x = fRadius * toothRatio;
             mulv2xm2( temp, rot, buf + ( i * 2 ) );
+            rotm2( fAngle, &rot );
             temp.x = fRadius;
             mulv2xm2( temp, rot, buf + ( i * 2 + 1 ) );
         }
@@ -113,9 +118,12 @@ V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
     rotm2( 0.0f, &rot );
     temp.x = fRadius * toothRatio;
     temp.y = 0.0f;
-    mulv2xm2( temp, rot, buf + ( *nBufSize ) - 1 );
+    mulv2xm2( temp, rot, buf + nTeethBufGeomSize - 1 );
 
 
+//    for( int i = 0; i < nCrown
+
+    *nBufSize = nTeethBufGeomSize;
 
     return buf;
 }
@@ -281,6 +289,18 @@ void main(void)
     free( vp );
 }
 
+void MoveWorld( )
+{
+    V3 scl;
+    V3 trn;
+    scl.y = -( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom ) );
+    trn.x = clRSize.x * 0.5f;
+    trn.y = clRSize.y * 0.5f;
+
+    scalem3( scl, &m2dProj );
+    translatem3( trn, &m2dProj );
+}
+
 void Aquire(HWND hwnd)
 {
 	GetClientRect(hwnd, &clRect);
@@ -289,15 +309,7 @@ void Aquire(HWND hwnd)
 
 	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
 
-    V3 scl;
-    V3 trn;
-    const float zoom( 10.0f );
-    scl.y = - ( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom  ) );
-    trn.x = clRSize.x * 0.5f;
-    trn.y = clRSize.y * 0.5f;
-
-    scalem3( scl, &m2dProj );
-    translatem3( trn, &m2dProj );
+    MoveWorld( );
 
     ReleaseDC( hwnd, hdc );
     ReleaseDC( hwnd, hMemDC );
@@ -325,6 +337,7 @@ void Aquire(HWND hwnd)
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+//    printf("%x\n", msg );
 	if (msg == WM_DESTROY || (msg == WM_KEYUP && wParam == VK_ESCAPE))
 	{
 		PostQuitMessage (0);
@@ -347,6 +360,17 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == 'Q')
 			fSign = -fSign;
 	}
+
+    if( msg == WM_MOUSEWHEEL )
+    {
+        printf( "high wparam: %d, hlparam: %d, llparam: %d\n", wParam >> 16, lParam >> 16, ( lParam << 16) >> 16 );
+        if( wParam & ( 1<<31) )
+            zoom+=1.0f;
+        else
+            zoom -= 1.0f;
+
+        MoveWorld();
+    }
 
 	if (msg == WM_SIZE)
 	{
