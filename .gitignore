@@ -285,3 +285,5 @@ __pycache__/
 *.manifest
 *.open*
 *.exe
+*.iobj
+*.ipdb
