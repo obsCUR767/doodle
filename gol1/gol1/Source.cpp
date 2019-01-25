@@ -9,6 +9,7 @@
 
 #include "tchar.h"
 #include "windows.h"
+#include "windowsx.h"
 
 #include "zmath.h"
 #include "prim.h"
@@ -76,7 +77,7 @@ V3 cubeVerts[] = {
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
 float zoom( 10.0f );
-
+V2 screenOffs;
 M3 m2dProj;
 
 V2* sproket1;
@@ -229,6 +230,7 @@ void Ding()
 
     m2dProj.initM3();
 
+
     iSq.iBuf = ibuf;
     iSq.iBufSize = sizeof( ibuf )/sizeof(size_t)/2;
     iSq.vBuf = vbuf;
@@ -291,21 +293,29 @@ void main(void)
 
 void MoveWorld( )
 {
+    V2 screenMid;
+    screenMid.x = ( clRect.right - clRect.left ) * 0.5f;
+    screenMid.y = ( clRect.bottom - clRect.top) * 0.5f;
+
     V3 scl;
     V3 trn;
     scl.y = -( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom ) );
-    trn.x = clRSize.x * 0.5f;
-    trn.y = clRSize.y * 0.5f;
+    trn = m2dProj.Z;
+    trn.x = trn.x + ( screenOffs.x - trn.x ) * 0.1f;
+    trn.y = trn.y + ( screenOffs.y - trn.y ) * 0.1f;
 
     scalem3( scl, &m2dProj );
     translatem3( trn, &m2dProj );
 }
 
-void Aquire(HWND hwnd)
+void Aquire(HWND hwnd, bool bInit = false )
 {
 	GetClientRect(hwnd, &clRect);
 	clRSize.x = clRect.right - clRect.left;
 	clRSize.y = clRect.bottom - clRect.top;
+
+    if( bInit ) 
+        translatem3( V3( (float)clRSize.x * 0.5f, (float)clRSize.y * 0.5f, 1.0f ), &m2dProj );
 
 	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
 
@@ -331,7 +341,6 @@ void Aquire(HWND hwnd)
     FillRect( hBackDC, &clRect, (HBRUSH)GetStockObject( BLACK_PEN ) );
     BITMAP b;
     GetObject( hbbufBM, sizeof( BITMAP ), &b );
-
 }
 
 
@@ -346,7 +355,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	if (msg == WM_CREATE)
 	{
-		Aquire(hwnd);
+		Aquire(hwnd, true);
 	}
 
 	if (msg == WM_KEYUP)
@@ -363,11 +372,18 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     if( msg == WM_MOUSEWHEEL )
     {
-        printf( "high wparam: %d, hlparam: %d, llparam: %d\n", wParam >> 16, lParam >> 16, ( lParam << 16) >> 16 );
+        DWORD fwKeys = GET_KEYSTATE_WPARAM( wParam );
+        DWORD zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
+        float fMultiplier = ((fwKeys & MK_SHIFT ) == MK_SHIFT ) ? 1.03f : 1.3f;
+
+        screenOffs.x = GET_X_LPARAM( lParam ) - clRect.left;
+        screenOffs.y = GET_Y_LPARAM( lParam ) - clRect.top;
+        printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
+
         if( wParam & ( 1<<31) )
-            zoom+=1.0f;
+            zoom *= fMultiplier;
         else
-            zoom -= 1.0f;
+            zoom /= fMultiplier;
 
         MoveWorld();
     }
