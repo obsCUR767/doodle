@@ -146,16 +146,131 @@ float v2Len( V2 v )
     return sqrtf( v.x * v.x + v.y * v.y );
 };
 
+V2 v2Norm(V2 v)
+{
+	V2 tmp;
+	float fLen = v2Len(v);
+	tmp.x = v.x / fLen;
+	tmp.y = v.y / fLen;
+	return tmp;
+}
+
+V2 v2Scale(V2 v, float _scale)
+{
+	V2 tmp;
+	tmp.x = v.x * _scale;
+	tmp.y = v.y * _scale;
+	return tmp;
+}
+
+V2 v2Neg(V2 v)
+{
+	V2 tmp;
+	tmp.x = -v.x;
+	tmp.y = -v.y;
+	return tmp;
+}
+
+V2 v2Add(V2 v1, V2 v2)
+{
+	V2 tmp;
+	tmp.x = v1.x + v2.x;
+	tmp.y = v1.y + v2.y;
+	return tmp;
+}
+
+V2 v2Sub(V2 v1, V2 v2)
+{
+	V2 tmp;
+	tmp.x = v1.x - v2.x;
+	tmp.y = v1.y - v2.y;
+	return tmp;
+}
+
 float v3Len( V3 v )
 {
     return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z );
 };
+
+V3 v3Norm(V3 v)
+{
+	V3 tmp;
+	float fLen = v3Len(v);
+	tmp.x = v.x / fLen;
+	tmp.y = v.y / fLen;
+	tmp.z = v.z / fLen;
+	return tmp;
+}
+
+V3 v3Scale(V3 v, float _scale)
+{
+	V3 tmp;
+	tmp.x = v.x * _scale;
+	tmp.y = v.y * _scale;
+	tmp.z = v.z * _scale;
+	return tmp;
+}
+
+V3 v3Neg(V3 v)
+{
+	V3 tmp;
+	tmp.x = -v.x;
+	tmp.y = -v.y;
+	tmp.z = -v.z;
+	return tmp;
+}
+
+V3 v3Add(V3 v1, V3 v2)
+{
+	V3 tmp;
+	tmp.x = v1.x + v2.x;
+	tmp.y = v1.y + v2.y;
+	tmp.z = v1.z + v2.z;
+	return tmp;
+}
+
+V3 v3Sub(V3 v1, V3 v2)
+{
+	V3 tmp;
+	tmp.x = v1.x - v2.x;
+	tmp.y = v1.y - v2.y;
+	tmp.z = v1.z - v2.z;
+	return tmp;
+}
 
 float v4Len( V4 v )
 {
     return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w );
 };
 
+V4 v4Norm(V4 v)
+{
+	V4 Norm;
+	float fLen = v4Len(v);
+	v.x /= fLen;
+	v.y /= fLen;
+	v.z /= fLen;
+	v.w /= fLen;
+	return v;
+}
+
+V4 v4Scale(V4 v, float _scale)
+{
+	v.x *= _scale;
+	v.y *= _scale;
+	v.z *= _scale;
+	v.w *= _scale;
+	return v;
+}
+
+V4 v4Sub(V4 v1, V4 v2)
+{
+	v1.x -= v2.x;
+	v1.y -= v2.y;
+	v1.z -= v2.z;
+	v1.w -= v2.w;
+	return v1;
+}
 
 void rotm2( float fAngle, M2* res )
 {

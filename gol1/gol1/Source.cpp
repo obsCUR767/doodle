@@ -77,6 +77,7 @@ V3 cubeVerts[] = {
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
 float zoom( 10.0f );
+float fSgn(0.1f);
 V2 screenOffs;
 M3 m2dProj;
 
@@ -145,32 +146,6 @@ void DrawV2BufTran( V2* buf, int n, M3* tran )
     Polyline( hMemDC, vp, n );
 }
 
-void DrawV3BufTran( V3* buf, int n, M3* tran )
-{
-    for( int i = 0; i < n; i++ )
-    {
-        V3 temp, temp1;
-        mulv3xm3( buf[i], *tran, &temp );
-        mulv3xm3( temp, m2dProj, &temp1 );
-        vp[i].x = (LONG)( temp1.x );
-        vp[i].y = (LONG)( temp1.y );
-    }
-
-    Polyline( hMemDC, vp, n );
-}
-
-void DrawV3Buf( V3* buf, int n )
-{
-    for( int i = 0; i < n; i++ )
-    {
-        V3 temp;
-        mulv3xm3( buf[i], m2dProj, &temp );
-        vp[i].x = (LONG)( temp.x );
-        vp[i].y = (LONG)( temp.y );
-    }
-
-    Polyline( hMemDC, vp, n );
-}
 
 void Draw( float fDeltaTime)
 {
@@ -301,8 +276,9 @@ void MoveWorld( )
     V3 trn;
     scl.y = -( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom ) );
     trn = m2dProj.Z;
-    trn.x = trn.x + ( screenOffs.x - trn.x ) * 0.1f;
-    trn.y = trn.y + ( screenOffs.y - trn.y ) * 0.1f;
+	V3 tmp(screenOffs.x, screenOffs.y, 1.0f);
+	trn = v3Add(trn, v3Scale(v3Norm(v3Sub(tmp, trn)), fSgn));
+
 
     scalem3( scl, &m2dProj );
     translatem3( trn, &m2dProj );
@@ -376,14 +352,27 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         DWORD zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
         float fMultiplier = ((fwKeys & MK_SHIFT ) == MK_SHIFT ) ? 1.03f : 1.3f;
 
-        screenOffs.x = GET_X_LPARAM( lParam ) - clRect.left;
-        screenOffs.y = GET_Y_LPARAM( lParam ) - clRect.top;
+		POINT p; 
+		p.x = GET_X_LPARAM(lParam);
+		p.y = GET_Y_LPARAM(lParam);
+		// wheel move coords in screen space, this converts in clientspace
+		ScreenToClient(hwnd, &p);
+
+        screenOffs.x = (float)p.x - clRect.left;
+        screenOffs.y = (float)p.y - clRect.top;
+
         printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
 
-        if( wParam & ( 1<<31) )
-            zoom *= fMultiplier;
-        else
-            zoom /= fMultiplier;
+		if (wParam & (1 << 31))
+		{
+			fSgn = -10.0f;
+			zoom *= fMultiplier;
+		}
+		else
+		{
+			fSgn = 10.0f;
+			zoom /= fMultiplier;
+		}
 
         MoveWorld();
     }
@@ -392,6 +381,23 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		Aquire(hwnd);
 		printf("WM_SIZE: %d\t%d\t%d\n", wParam, lParam >> 16, lParam & ((1 << 16) - 1));
+	}
+
+	if (msg == WM_MOUSEMOVE)
+	{
+
+		DWORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
+		if ((fwKeys & MK_LBUTTON) == MK_LBUTTON)
+		{
+			V3 tmp;
+			printf("high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y);
+			tmp.x = (float)GET_X_LPARAM(lParam);
+			tmp.y = (float)GET_Y_LPARAM(lParam);
+			screenOffs.x = (float)tmp.x - clRect.left;
+			screenOffs.y = (float)tmp.y - clRect.top;
+
+			m2dProj.Z = tmp;
+		}
 	}
 
     if( msg == WM_MOVE )
