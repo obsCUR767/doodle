@@ -268,15 +268,11 @@ void main(void)
 
 void MoveWorld( )
 {
-    V2 screenMid;
-    screenMid.x = ( clRect.right - clRect.left ) * 0.5f;
-    screenMid.y = ( clRect.bottom - clRect.top) * 0.5f;
-
     V3 scl;
     V3 trn;
     scl.y = -( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom ) );
     trn = m2dProj.Z;
-	V3 tmp(screenOffs.x, screenOffs.y, 1.0f);
+	V3 tmp(screenOffs.x, screenOffs.y, 0.0f);
 	trn = v3Add(trn, v3Scale(v3Norm(v3Sub(tmp, trn)), fSgn));
 
 
@@ -350,7 +346,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         DWORD fwKeys = GET_KEYSTATE_WPARAM( wParam );
         DWORD zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
-        float fMultiplier = ((fwKeys & MK_SHIFT ) == MK_SHIFT ) ? 1.03f : 1.3f;
+        float fMultiplier = ((fwKeys & MK_SHIFT ) == MK_SHIFT ) ? 1.03f : 1.1f;
 
 		POINT p; 
 		p.x = GET_X_LPARAM(lParam);
@@ -365,12 +361,12 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		if (wParam & (1 << 31))
 		{
-			fSgn = -10.0f;
+			fSgn = 10.0f * fMultiplier;
 			zoom *= fMultiplier;
 		}
 		else
 		{
-			fSgn = 10.0f;
+			fSgn = -10.0f * fMultiplier;
 			zoom /= fMultiplier;
 		}
 
@@ -382,21 +378,22 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		Aquire(hwnd);
 		printf("WM_SIZE: %d\t%d\t%d\n", wParam, lParam >> 16, lParam & ((1 << 16) - 1));
 	}
-
+    static POINT leftButtonDragStart{0,0};
+    if( msg == WM_LBUTTONDOWN )
+    {
+        leftButtonDragStart.x = GET_X_LPARAM( lParam );
+        leftButtonDragStart.y = GET_Y_LPARAM( lParam );
+    }
 	if (msg == WM_MOUSEMOVE)
 	{
-
 		DWORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
 		if ((fwKeys & MK_LBUTTON) == MK_LBUTTON)
 		{
-			V3 tmp;
-			printf("high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y);
-			tmp.x = (float)GET_X_LPARAM(lParam);
-			tmp.y = (float)GET_Y_LPARAM(lParam);
-			screenOffs.x = (float)tmp.x - clRect.left;
-			screenOffs.y = (float)tmp.y - clRect.top;
-
-			m2dProj.Z = tmp;
+            POINT leftButtonDragCoord;
+            leftButtonDragCoord.x = GET_X_LPARAM( lParam );
+            leftButtonDragCoord.y = GET_Y_LPARAM( lParam );
+            m2dProj.Z = v3Add( m2dProj.Z, V3((float)leftButtonDragCoord.x - leftButtonDragStart.x, (float)leftButtonDragCoord.y - leftButtonDragStart.y, 0.0f ) );
+            leftButtonDragStart = leftButtonDragCoord;
 		}
 	}
 
