@@ -186,10 +186,9 @@ void Loop(HWND hwnd)
 
 }
 
-
-
 void Ding()
 {
+
     const float RADIUS( 10.0f );
     const float TURNS( 10.0f );
     const float HEIGHT( 20.0f );
@@ -266,18 +265,12 @@ void main(void)
     free( vp );
 }
 
-void MoveWorld( )
+
+void Proj()
 {
-    V3 scl;
-    V3 trn;
-    scl.y = -( scl.x = ( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.8f * ( 1.0f / zoom ) );
-    trn = m2dProj.Z;
-	V3 tmp(screenOffs.x, screenOffs.y, 0.0f);
-	trn = v3Add(trn, v3Scale(v3Norm(v3Sub(tmp, trn)), fSgn));
-
-
-    scalem3( scl, &m2dProj );
-    translatem3( trn, &m2dProj );
+    float fTemp( float( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.1f );
+    scalem3( V3( fTemp, -fTemp, 1.0f ), &m2dProj );
+    translatem3( v3Scale( V3( float( clRSize.x ), float( clRSize.y ), 0.0f ), 0.5f ), &m2dProj );
 }
 
 void Aquire(HWND hwnd, bool bInit = false )
@@ -286,12 +279,9 @@ void Aquire(HWND hwnd, bool bInit = false )
 	clRSize.x = clRect.right - clRect.left;
 	clRSize.y = clRect.bottom - clRect.top;
 
-    if( bInit ) 
-        translatem3( V3( (float)clRSize.x * 0.5f, (float)clRSize.y * 0.5f, 1.0f ), &m2dProj );
-
 	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
 
-    MoveWorld( );
+    Proj( );
 
     ReleaseDC( hwnd, hdc );
     ReleaseDC( hwnd, hMemDC );
@@ -319,6 +309,10 @@ void Aquire(HWND hwnd, bool bInit = false )
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 //    printf("%x\n", msg );
+
+    screenOffs.x = 0.0f;
+    screenOffs.y = 0.0f;
+
 	if (msg == WM_DESTROY || (msg == WM_KEYUP && wParam == VK_ESCAPE))
 	{
 		PostQuitMessage (0);
@@ -370,7 +364,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			zoom /= fMultiplier;
 		}
 
-        MoveWorld();
+        Proj();
     }
 
 	if (msg == WM_SIZE)
@@ -378,7 +372,9 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		Aquire(hwnd);
 		printf("WM_SIZE: %d\t%d\t%d\n", wParam, lParam >> 16, lParam & ((1 << 16) - 1));
 	}
+
     static POINT leftButtonDragStart{0,0};
+
     if( msg == WM_LBUTTONDOWN )
     {
         leftButtonDragStart.x = GET_X_LPARAM( lParam );

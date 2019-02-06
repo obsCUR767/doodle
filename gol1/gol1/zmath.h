@@ -141,12 +141,12 @@ union M4
 
 
 
-float v2Len( V2 v )
+inline float v2Len( V2 v )
 {
     return sqrtf( v.x * v.x + v.y * v.y );
 };
 
-V2 v2Norm(V2 v)
+inline V2 v2Norm(V2 v)
 {
 	V2 tmp;
 	float fLen = v2Len(v);
@@ -155,7 +155,7 @@ V2 v2Norm(V2 v)
 	return tmp;
 }
 
-V2 v2Scale(V2 v, float _scale)
+inline V2 v2Scale(V2 v, float _scale)
 {
 	V2 tmp;
 	tmp.x = v.x * _scale;
@@ -163,7 +163,7 @@ V2 v2Scale(V2 v, float _scale)
 	return tmp;
 }
 
-V2 v2Neg(V2 v)
+inline V2 v2Neg(V2 v)
 {
 	V2 tmp;
 	tmp.x = -v.x;
@@ -171,7 +171,7 @@ V2 v2Neg(V2 v)
 	return tmp;
 }
 
-V2 v2Add(V2 v1, V2 v2)
+inline V2 v2Add(V2 v1, V2 v2)
 {
 	V2 tmp;
 	tmp.x = v1.x + v2.x;
@@ -179,7 +179,7 @@ V2 v2Add(V2 v1, V2 v2)
 	return tmp;
 }
 
-V2 v2Sub(V2 v1, V2 v2)
+inline V2 v2Sub(V2 v1, V2 v2)
 {
 	V2 tmp;
 	tmp.x = v1.x - v2.x;
@@ -187,12 +187,12 @@ V2 v2Sub(V2 v1, V2 v2)
 	return tmp;
 }
 
-float v3Len( V3 v )
+inline float v3Len( V3 v )
 {
     return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z );
 };
 
-V3 v3Norm(V3 v)
+inline V3 v3Norm(V3 v)
 {
 	V3 tmp;
 	float fLen = v3Len(v);
@@ -202,7 +202,7 @@ V3 v3Norm(V3 v)
 	return tmp;
 }
 
-V3 v3Scale(V3 v, float _scale)
+inline V3 v3Scale(V3 v, float _scale)
 {
 	V3 tmp;
 	tmp.x = v.x * _scale;
@@ -211,7 +211,7 @@ V3 v3Scale(V3 v, float _scale)
 	return tmp;
 }
 
-V3 v3Neg(V3 v)
+inline V3 v3Neg(V3 v)
 {
 	V3 tmp;
 	tmp.x = -v.x;
@@ -220,7 +220,7 @@ V3 v3Neg(V3 v)
 	return tmp;
 }
 
-V3 v3Add(V3 v1, V3 v2)
+inline V3 v3Add(V3 v1, V3 v2)
 {
 	V3 tmp;
 	tmp.x = v1.x + v2.x;
@@ -229,7 +229,7 @@ V3 v3Add(V3 v1, V3 v2)
 	return tmp;
 }
 
-V3 v3Sub(V3 v1, V3 v2)
+inline V3 v3Sub(V3 v1, V3 v2)
 {
 	V3 tmp;
 	tmp.x = v1.x - v2.x;
@@ -238,12 +238,12 @@ V3 v3Sub(V3 v1, V3 v2)
 	return tmp;
 }
 
-float v4Len( V4 v )
+inline float v4Len( V4 v )
 {
     return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w );
 };
 
-V4 v4Norm(V4 v)
+inline V4 v4Norm(V4 v)
 {
 	V4 Norm;
 	float fLen = v4Len(v);
@@ -254,7 +254,7 @@ V4 v4Norm(V4 v)
 	return v;
 }
 
-V4 v4Scale(V4 v, float _scale)
+inline V4 v4Scale(V4 v, float _scale)
 {
 	v.x *= _scale;
 	v.y *= _scale;
@@ -263,7 +263,7 @@ V4 v4Scale(V4 v, float _scale)
 	return v;
 }
 
-V4 v4Sub(V4 v1, V4 v2)
+inline V4 v4Sub(V4 v1, V4 v2)
 {
 	v1.x -= v2.x;
 	v1.y -= v2.y;
@@ -272,7 +272,7 @@ V4 v4Sub(V4 v1, V4 v2)
 	return v1;
 }
 
-void rotm2( float fAngle, M2* res )
+inline void rotm2( float fAngle, M2* res )
 {
     res->a00 = res->a11 = cosf(fAngle);
     res->a10 = - ( res->a01 = sinf( fAngle ) );
@@ -280,25 +280,25 @@ void rotm2( float fAngle, M2* res )
 
 
 
-void rotm3( float fAngle, M3* res )
+inline void rotm3( float fAngle, M3* res )
 {
     res->a00 = res->a11 = cosf( fAngle );
     res->a10 = -( res->a01 = sinf( fAngle ) );
 }
 
-void rotxm3(float fXAngle, M3* res)
+inline void rotxm3(float fXAngle, M3* res)
 {
 	res->a11 = res->a22 = cosf(fXAngle);
 	res->a21 = -(res->a12 = sinf(fXAngle));
 }
 
-void rotym3(float fYAngle, M3* res)
+inline void rotym3(float fYAngle, M3* res)
 {
 	res->a00 = res->a22 = cosf(fYAngle);
 	res->a20 = -(res->a02 = sinf(fYAngle));
 }
 
-void rotzm3(float fZAngle, M3* res)
+inline void rotzm3(float fZAngle, M3* res)
 {
 	res->a00 = res->a11 = cosf(fZAngle);
 	res->a10 = -(res->a01 = sinf(fZAngle));
@@ -306,23 +306,23 @@ void rotzm3(float fZAngle, M3* res)
 
 
 
-void translatem3( V2 tran, M3* res )
+inline void translatem3( V2 tran, M3* res )
 {
     res->a20 = tran.x;
     res->a21 = tran.y;
 }
 
-void translatem3( V3 tran, M3* res )
+inline void translatem3( V3 tran, M3* res )
 {
     res->Z = tran;
 }
 
-void scalem2( V2 s, M2* res ) { res->a00 = s.x; res->a11 = s.y; }
-void scalem3( V3 s, M3* res ) { res->a00 = s.x; res->a11 = s.y; res->a22 = s.z; }
-void scalem4( V4 s, M4* res ) { res->a00 = s.x; res->a11 = s.y; res->a22 = s.z; res->a33 = s.w; }
+inline void scalem2( V2 s, M2* res ) { res->a00 = s.x; res->a11 = s.y; }
+inline void scalem3( V3 s, M3* res ) { res->a00 = s.x; res->a11 = s.y; res->a22 = s.z; }
+inline void scalem4( V4 s, M4* res ) { res->a00 = s.x; res->a11 = s.y; res->a22 = s.z; res->a33 = s.w; }
 
 
-void mul2x2( M2 a, M2 b, M2* res )
+inline void mul2x2( M2 a, M2 b, M2* res )
 {
     res->a00 = a.a00 * b.a00 + a.a01 * b.a10;
     res->a01 = a.a00 * b.a01 + a.a01 * b.a11;
@@ -331,7 +331,7 @@ void mul2x2( M2 a, M2 b, M2* res )
 };
 
 
-void mul3x3( M3 a, M3 b, M3* res )
+inline void mul3x3( M3 a, M3 b, M3* res )
 {
     res->a00 = a.a00 * b.a00 + a.a01 * b.a10 + a.a02 * b.a20;
     res->a01 = a.a00 * b.a01 + a.a01 * b.a11 + a.a02 * b.a21;
@@ -346,7 +346,7 @@ void mul3x3( M3 a, M3 b, M3* res )
     res->a22 = a.a20 * b.a02 + a.a21 * b.a12 + a.a22 * b.a22;
 };
 
-void mul4x4( M4 a, M4 b, M4* res )
+inline void mul4x4( M4 a, M4 b, M4* res )
 {
     res->a00 = a.a00 * b.a00 + a.a01 * b.a10 + a.a02 * b.a20 + a.a03 * b.a30;
     res->a01 = a.a00 * b.a01 + a.a01 * b.a11 + a.a02 * b.a21 + a.a03 * b.a31;
@@ -370,32 +370,32 @@ void mul4x4( M4 a, M4 b, M4* res )
 };
 
 
-void translatem4(V3 tran, M4* res)
+inline void translatem4(V3 tran, M4* res)
 {
 	res->a30 = tran.x;
 	res->a31 = tran.y;
 	res->a32 = tran.z;
 }
 
-void translatem4(V4 tran, M4* res)
+inline void translatem4(V4 tran, M4* res)
 {
 	res->W = tran;
 }
 
 
-void rotxm4(float fXAngle, M4* res)
+inline void rotxm4(float fXAngle, M4* res)
 {
 	res->a11 = res->a22 = cosf(fXAngle);
 	res->a21 = -(res->a12 = sinf(fXAngle));
 }
 
-void rotym4(float fYAngle, M4* res)
+inline void rotym4(float fYAngle, M4* res)
 {
 	res->a00 = res->a22 = cosf(fYAngle);
 	res->a20 = -(res->a02 = sinf(fYAngle));
 }
 
-void rotzm4(float fZAngle, M4* res)
+inline void rotzm4(float fZAngle, M4* res)
 {
 	res->a00 = res->a11 = cosf(fZAngle);
 	res->a10 = -(res->a01 = sinf(fZAngle));
@@ -403,54 +403,54 @@ void rotzm4(float fZAngle, M4* res)
 
 
 
-float dot2( V2 a, V2 b )
+inline float dot2( V2 a, V2 b )
 {
     return a.x * b.x + a.y * b.y;
 }
 
-float dot3( V3 a, V3 b )
+inline float dot3( V3 a, V3 b )
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-float dot4( V4 a, V4 b )
+inline float dot4( V4 a, V4 b )
 {
     return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 }
 
-float crossv2( V2 a, V2 b )
+inline float crossv2( V2 a, V2 b )
 {
     return a.x * b.y - a.y * b.x;
 }
 
-void crossV3( V3 a, V3 b, V3* res )
+inline void crossV3( V3 a, V3 b, V3* res )
 {
     res->x = a.y * b.z - a.z * b.y;
     res->y = a.z * b.x - a.x * b.z;
     res->z = a.x * b.y - a.y * b.x;
 }
 
-void mulm2xv2( V2 v, M2 m, V2* res )
+inline void mulm2xv2( V2 v, M2 m, V2* res )
 {
     res->x = dot2( v, m.X );
     res->y = dot2( v, m.Y );
 }
 
-void mulv2xm2( V2 v, M2 m, V2* res )
+inline void mulv2xm2( V2 v, M2 m, V2* res )
 {
     res->x = v.x * m.a00 + v.y * m.a10;
     res->y = v.x * m.a01 + v.y * m.a11;
 }
 
 
-void mulm3xv3( V3 v, M3 m, V3* res )
+inline void mulm3xv3( V3 v, M3 m, V3* res )
 {
     res->x = dot3( v, m.X );
     res->y = dot3( v, m.Y );
     res->z = dot3( v, m.Z );
 }
 
-void mulv3xm3( V3 v, M3 m, V3* res )
+inline void mulv3xm3( V3 v, M3 m, V3* res )
 {
     res->x = v.x * m.a00 + v.y * m.a10 + v.z * m.a20;
     res->y = v.x * m.a01 + v.y * m.a11 + v.z * m.a21;
@@ -459,7 +459,7 @@ void mulv3xm3( V3 v, M3 m, V3* res )
 
 
 
-void mulm4xv4( V4 v, M4 m, V4* res )
+inline void mulm4xv4( V4 v, M4 m, V4* res )
 {
     res->x = dot4( v, m.X );
     res->y = dot4( v, m.Y );
@@ -467,11 +467,39 @@ void mulm4xv4( V4 v, M4 m, V4* res )
     res->w = dot4( v, m.W );
 }
 
-void mulv4xm4( V4 v, M4 m, V4* res )
+inline void mulv4xm4( V4 v, M4 m, V4* res )
 {
     res->x = v.x * m.a00 + v.y * m.a10 + v.z * m.a20 + v.w * m.a30;
     res->y = v.x * m.a01 + v.y * m.a11 + v.z * m.a21 + v.w * m.a31;
     res->z = v.x * m.a02 + v.y * m.a12 + v.z * m.a22 + v.w * m.a32;
     res->w = v.x * m.a03 + v.y * m.a13 + v.z * m.a23 + v.w * m.a33;
 }
+
+
+inline float detm2( M2 m )
+{
+    return m.a00 * m.a11 - m.a01 * m.a10;
+}
+
+inline float detm3( M3 m )
+{
+/*
+    a00 a01 a02 a00 a01 a02
+    a10 a11 a12 a10 a11 a12
+    a20 a21 a22 a20 a21 a22
+ ( m.a00 * m.a11 * m.a22 ) + ( m.a01 * m.a12 * m.a20 ) + ( m.a02 * m.a10 * m.a21) - ( m.a00 * m.a12 * m.a21 ) - ( m.a01 * m.a10 * m.a22 ) - ( m.a02 * m.a11 * m.a20 )
+*/
+    return ( m.a00 * m.a11 * m.a22 ) + ( m.a01 * m.a12 * m.a20 ) + ( m.a02 * m.a10 * m.a21 ) - ( m.a00 * m.a12 * m.a21 ) - ( m.a01 * m.a10 * m.a22 ) - ( m.a02 * m.a11 * m.a20 );
+}
+
+inline float detm4( M4 m )
+{
+//    ( m.a01 * m.a12 * m.a23 ) + ( m.a02 * m.a13 * m.a21 ) + ( m.a03 * m.a11 * m.a22 ) - ( m.a01 * m.a13 * m.a22 ) - ( m.a02 * m.a11 * m.a23 ) - ( m.a03 * m.a12 * m.a21 )
+    return 
+    + m.a00 * ( ( m.a11 * m.a22 * m.a33 ) + ( m.a12 * m.a23 * m.a31 ) + ( m.a13 * m.a21 * m.a32 ) - ( m.a11 * m.a23 * m.a32 ) - ( m.a12 * m.a21 * m.a33 ) - ( m.a13 * m.a22 * m.a31 ) )
+    - m.a10 * ( ( m.a01 * m.a22 * m.a33 ) + ( m.a02 * m.a23 * m.a31 ) + ( m.a03 * m.a21 * m.a32 ) - ( m.a01 * m.a23 * m.a32 ) - ( m.a02 * m.a21 * m.a33 ) - ( m.a03 * m.a22 * m.a31 ) )
+    + m.a20 * ( ( m.a01 * m.a12 * m.a33 ) + ( m.a02 * m.a13 * m.a31 ) + ( m.a03 * m.a11 * m.a32 ) - ( m.a01 * m.a13 * m.a32 ) - ( m.a02 * m.a11 * m.a33 ) - ( m.a03 * m.a12 * m.a31 ) )
+    - m.a30 * ( ( m.a01 * m.a12 * m.a23 ) + ( m.a02 * m.a13 * m.a21 ) + ( m.a03 * m.a11 * m.a22 ) - ( m.a01 * m.a13 * m.a22 ) - ( m.a02 * m.a11 * m.a23 ) - ( m.a03 * m.a12 * m.a21 ) );
+}
+
 
