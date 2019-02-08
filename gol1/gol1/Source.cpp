@@ -1,5 +1,5 @@
 #define _WIN32_LEAN_AND_MEAN
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #define _USE_MATH_DEFINES
@@ -185,9 +185,79 @@ void Loop(HWND hwnd)
 	}
 
 }
+static const size_t BUFLEN( 16 * 1024 * 1024 );
+static const size_t RANDBUFLEN( 6114 );
+
+
+void bench()
+{
+
+//    V3* v3buf = (V3*)malloc( sizeof( V3 ) * BUFLEN );
+//    V3* normBuf = (V3*)malloc( sizeof( V3 ) * BUFLEN );
+
+//    TICK( t1 );
+//
+//    for( int i = 0; i < BUFLEN; i++ )
+//    {
+//        v3buf[i].x = randBuf[( BUFLEN / 7 - i * 2 ) % RANDBUFLEN];
+//        v3buf[i].y = randBuf[( i * 100 ) % RANDBUFLEN];
+//        v3buf[i].z = randBuf[( - i * 2)%RANDBUFLEN];
+//    }
+
+
+#ifdef _DEBUG
+    const int kk( 1 );
+#else
+    const int kk( 1 );
+#endif //_DEBUG
+
+
+//    TOCK( t1, t2, "gen: " );
+    float* randBuf = (float*)malloc( sizeof( float ) * RANDBUFLEN );
+    for( int i = 0; i < RANDBUFLEN; randBuf[i++] = ( rand( ) - ( 1 << 14 ) ) / float( 1 << 6 ) );
+
+
+    int count = 0;
+    for( size_t ss = 100; ss < BUFLEN; ss *= 12, ss /= 10, count++ )
+    {
+        TICK( t1 );
+        printf( "\ncount %d, bufsize %d\n", count, ss );
+
+        V3* v3buf = (V3*)malloc( sizeof( V3 ) * ss );
+        V3* normBuf = (V3*)malloc( sizeof( V3 ) * ss );
+
+        for( size_t i = 0; i < ss; i++ )
+        {
+            v3buf[i].x = randBuf[( ss/ 7 - i * 2 ) % RANDBUFLEN];
+            v3buf[i].y = randBuf[( i * 100 ) % RANDBUFLEN];
+            v3buf[i].z = randBuf[( i * 2 ) % RANDBUFLEN];
+        }
+
+
+        TOCK( t1, t2, "fill: " );
+        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; normBuf[i] = v3Norm( v3buf[i] ), i++ );
+        TOCK( t2, t3, "v3Norm by val indirect:\t" );
+
+        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; v3Norm( v3buf[i], normBuf + i ), i++ );
+        TOCK( t3, t4, "v3Norm by reference:\t" );
+
+        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; normBuf[i] = v3NormDirect( v3buf[i] ), i++ );
+        TOCK( t4, t5, "v3Norm by val direct:\t" );
+
+        printf( "\n" );
+        free( v3buf );
+        free( normBuf );
+    }
+
+    printf( "********** DONE! **************" );
+    getc(stdin);
+    exit( 0);
+}
 
 void Ding()
 {
+
+    bench();
 
     const float RADIUS( 10.0f );
     const float TURNS( 10.0f );

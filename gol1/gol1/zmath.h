@@ -146,13 +146,26 @@ inline float v2Len( V2 v )
     return sqrtf( v.x * v.x + v.y * v.y );
 };
 
+inline void v2Norm( V2 v, V2*res )
+{
+    float fLen = v2Len( v );
+    res->x = v.x / fLen;
+    res->y = v.y / fLen;
+}
+
 inline V2 v2Norm(V2 v)
 {
 	V2 tmp;
-	float fLen = v2Len(v);
-	tmp.x = v.x / fLen;
-	tmp.y = v.y / fLen;
-	return tmp;
+    v2Norm(v, &tmp);
+    return tmp;
+}
+
+inline V2 v2NormDirect( V2 v )
+{
+    float fLen = v2Len( v );
+    v.x /= fLen;
+    v.y /= fLen;
+    return v;
 }
 
 inline V2 v2Scale(V2 v, float _scale)
@@ -192,14 +205,29 @@ inline float v3Len( V3 v )
     return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z );
 };
 
+inline void v3Norm( V3 v, V3* res )
+{
+    float fLen = v3Len( v );
+    res->x /= fLen;
+    res->y /= fLen;
+    res->z /= fLen;
+}
+
 inline V3 v3Norm(V3 v)
 {
 	V3 tmp;
-	float fLen = v3Len(v);
-	tmp.x = v.x / fLen;
-	tmp.y = v.y / fLen;
-	tmp.z = v.z / fLen;
+    v3Norm( v, &tmp);
 	return tmp;
+}
+
+inline V3 v3NormDirect( V3 v )
+{
+    V3 tmp;
+    float fLen = v3Len( v );
+    tmp.x /= fLen;
+    tmp.y /= fLen;
+    tmp.z /= fLen;
+    return tmp;
 }
 
 inline V3 v3Scale(V3 v, float _scale)
