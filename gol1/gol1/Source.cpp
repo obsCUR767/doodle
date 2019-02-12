@@ -185,11 +185,11 @@ void Loop(HWND hwnd)
 	}
 
 }
-static const size_t BUFLEN( 16 * 1024 * 1024 );
+static const size_t BUFLEN( 32 * 1024 * 1024 );
 static const size_t RANDBUFLEN( 6114 );
 
 
-void bench()
+DWORD WINAPI bench(void*)
 {
 
 //    V3* v3buf = (V3*)malloc( sizeof( V3 ) * BUFLEN );
@@ -218,46 +218,56 @@ void bench()
 
 
     int count = 0;
-    for( size_t ss = 100; ss < BUFLEN; ss *= 12, ss /= 10, count++ )
+    for( size_t ss = 10000; ss < BUFLEN; ss *= 12, ss /= 8, count++ )
+//    for( size_t ss = 100; ss < BUFLEN; ss += 500, count++ )
     {
         TICK( t1 );
         printf( "\ncount %d, bufsize %d\n", count, ss );
 
-        V3* v3buf = (V3*)malloc( sizeof( V3 ) * ss );
-        V3* normBuf = (V3*)malloc( sizeof( V3 ) * ss );
+        M4* matbuf = (M4*)malloc( sizeof( M4 ) * ss ); if( !matbuf ) { printf( "******************** matbuf alloc error at %d Mbytes \n", sizeof(M4) * ss / 1024 / 1024 ); return 1; }
+//        M4* resbuf = (M4*)malloc( sizeof( M4 ) * ss ); if( !resbuf ) { printf( "******************** resbuf alloc error at %d Mbytes \n", sizeof(M4) * ss / 1024 / 1024 ); free( matbuf); return 1; }
+        M4 resmat;
 
         for( size_t i = 0; i < ss; i++ )
-        {
-            v3buf[i].x = randBuf[( ss/ 7 - i * 2 ) % RANDBUFLEN];
-            v3buf[i].y = randBuf[( i * 100 ) % RANDBUFLEN];
-            v3buf[i].z = randBuf[( i * 2 ) % RANDBUFLEN];
-        }
+            for( size_t k = 0; k < 16; k++ )
+                matbuf[i].a[k] = randBuf[ ( size_t(i * kk - 234)) % RANDBUFLEN ];
 
 
         TOCK( t1, t2, "fill: " );
-        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; normBuf[i] = v3Norm( v3buf[i] ), i++ );
-        TOCK( t2, t3, "v3Norm by val indirect:\t" );
-
-        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; v3Norm( v3buf[i], normBuf + i ), i++ );
-        TOCK( t3, t4, "v3Norm by reference:\t" );
-
-        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; normBuf[i] = v3NormDirect( v3buf[i] ), i++ );
-        TOCK( t4, t5, "v3Norm by val direct:\t" );
+        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; resmat = mul4x4( matbuf[i], matbuf[i] ), i++ );         if( ( ss % 1000 ) == 0 ) printf( "%f\n", resmat.a[0] );
+        TOCK( t2, t3, "mul4x4 by val direct:\t" );                                                                       
+                                                                                                                         
+        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; mul4x4( matbuf[i], matbuf[i], &resmat ), i++ );         if( ( ss % 1000 ) == 0 ) printf( "%f\n", resmat.a[0] );
+        TOCK( t3, t4, "mul4x4 by reference:\t" );                                                                        
+                                                                                                                         
+        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; resmat = mul4x4Indirect( matbuf[i], matbuf[i] ), i++ ); if( ( ss % 1000 ) == 0 ) printf( "%f\n", resmat.a[0] );
+        TOCK( t4, t5, "mul4x4 by val INdirect:\t" );
 
         printf( "\n" );
-        free( v3buf );
-        free( normBuf );
+        free( matbuf );
     }
 
-    printf( "********** DONE! **************" );
-    getc(stdin);
-    exit( 0);
+//    printf( "********** DONE! **************" );
+//    getc(stdin);
+//    exit( 0);
+
+    return 0;
 }
 
 void Ding()
 {
+    static const int NUMTHR(1);
+    HANDLE hv[NUMTHR];
+    for( int i = 0; i < NUMTHR; i++ )
+        hv[i] = CreateThread( 0, 0, bench, 0, 0, 0 );
+  
+    WaitForMultipleObjects( NUMTHR, hv, 1, INFINITE );
+    printf( "********** DONE! **************" );
+    getc(stdin);
+    exit( 0);
 
-    bench();
+
+//    bench();
 
     const float RADIUS( 10.0f );
     const float TURNS( 10.0f );
