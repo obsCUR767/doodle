@@ -14,11 +14,6 @@
 #include "zmath.h"
 #include "prim.h"
 
-#define TICK( tick )     LARGE_INTEGER tick;                    \
-                                QueryPerformanceCounter( &tick );      
-#define TOCK( tick, tock, msg )     LARGE_INTEGER tock;                    \
-                                QueryPerformanceCounter( &tock );          \
-                                printf( "%s %f sec\n", msg, (tock.QuadPart - tick.QuadPart) / (float)freq.QuadPart );
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
@@ -185,90 +180,10 @@ void Loop(HWND hwnd)
 	}
 
 }
-static const size_t BUFLEN( 32 * 1024 * 1024 );
-static const size_t RANDBUFLEN( 6114 );
 
-
-DWORD WINAPI bench(void*)
-{
-
-//    V3* v3buf = (V3*)malloc( sizeof( V3 ) * BUFLEN );
-//    V3* normBuf = (V3*)malloc( sizeof( V3 ) * BUFLEN );
-
-//    TICK( t1 );
-//
-//    for( int i = 0; i < BUFLEN; i++ )
-//    {
-//        v3buf[i].x = randBuf[( BUFLEN / 7 - i * 2 ) % RANDBUFLEN];
-//        v3buf[i].y = randBuf[( i * 100 ) % RANDBUFLEN];
-//        v3buf[i].z = randBuf[( - i * 2)%RANDBUFLEN];
-//    }
-
-
-#ifdef _DEBUG
-    const int kk( 1 );
-#else
-    const int kk( 1 );
-#endif //_DEBUG
-    
-
-//    TOCK( t1, t2, "gen: " );
-    float* randBuf = (float*)malloc( sizeof( float ) * RANDBUFLEN );
-    for( int i = 0; i < RANDBUFLEN; randBuf[i++] = ( rand( ) - ( 1 << 14 ) ) / float( 1 << 6 ) );
-
-
-    int count = 0;
-    for( size_t ss = 10000; ss < BUFLEN; ss *= 12, ss /= 8, count++ )
-//    for( size_t ss = 100; ss < BUFLEN; ss += 500, count++ )
-    {
-        TICK( t1 );
-        printf( "\ncount %d, bufsize %d\n", count, ss );
-
-        M4* matbuf = (M4*)malloc( sizeof( M4 ) * ss ); if( !matbuf ) { printf( "******************** matbuf alloc error at %d Mbytes \n", sizeof(M4) * ss / 1024 / 1024 ); return 1; }
-//        M4* resbuf = (M4*)malloc( sizeof( M4 ) * ss ); if( !resbuf ) { printf( "******************** resbuf alloc error at %d Mbytes \n", sizeof(M4) * ss / 1024 / 1024 ); free( matbuf); return 1; }
-        M4 resmat;
-
-        for( size_t i = 0; i < ss; i++ )
-            for( size_t k = 0; k < 16; k++ )
-                matbuf[i].a[k] = randBuf[ ( size_t(i * kk - 234)) % RANDBUFLEN ];
-
-
-        TOCK( t1, t2, "fill: " );
-        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; resmat = mul4x4( matbuf[i], matbuf[i] ), i++ );         if( ( ss % 1000 ) == 0 ) printf( "%f\n", resmat.a[0] );
-        TOCK( t2, t3, "mul4x4 by val direct:\t" );                                                                       
-                                                                                                                         
-        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; mul4x4( matbuf[i], matbuf[i], &resmat ), i++ );         if( ( ss % 1000 ) == 0 ) printf( "%f\n", resmat.a[0] );
-        TOCK( t3, t4, "mul4x4 by reference:\t" );                                                                        
-                                                                                                                         
-        for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; resmat = mul4x4Indirect( matbuf[i], matbuf[i] ), i++ ); if( ( ss % 1000 ) == 0 ) printf( "%f\n", resmat.a[0] );
-        TOCK( t4, t5, "mul4x4 by val INdirect:\t" );
-
-        printf( "\n" );
-        free( matbuf );
-    }
-    
-//    printf( "********** DONE! **************" );
-//    getc(stdin);
-//    exit( 0);
-
-    return 0;
-}
 
 void Ding()
 {
-    static const int NUMTHR(1);
-    HANDLE hv[NUMTHR];
-    for( int i = 0; i < NUMTHR; i++ )
-        hv[i] = CreateThread( 0, 0, bench, 0, 0, 0 );
-  
-    WaitForMultipleObjects( NUMTHR, hv, 1, INFINITE );
-    printf( "********** DONE! **************" );
-    getc(stdin);
-    exit( 0);
-
-
-//    bench();
-
     const float RADIUS( 10.0f );
     const float TURNS( 10.0f );
     const float HEIGHT( 20.0f );
