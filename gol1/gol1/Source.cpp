@@ -14,6 +14,7 @@
 #include "zmath.h"
 #include "prim.h"
 
+#include "bench.h"
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
@@ -182,8 +183,13 @@ void Loop(HWND hwnd)
 }
 
 
+
+
 void Ding()
 {
+
+    invTest();
+
     const float RADIUS( 10.0f );
     const float TURNS( 10.0f );
     const float HEIGHT( 20.0f );
@@ -264,8 +270,8 @@ void main(void)
 void Proj()
 {
     float fTemp( float( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.1f );
-    scalem3( V3( fTemp, -fTemp, 1.0f ), &m2dProj );
-    translatem3( v3Scale( V3( float( clRSize.x ), float( clRSize.y ), 0.0f ), 0.5f ), &m2dProj );
+    scalem3( V3{ fTemp, -fTemp, 1.0f }, &m2dProj );
+    translatem3( v3Scale( V3{ float( clRSize.x ), float( clRSize.y ), 0.0f }, 0.5f ), &m2dProj );
 }
 
 void Aquire(HWND hwnd, bool bInit = false )
@@ -383,7 +389,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             POINT leftButtonDragCoord;
             leftButtonDragCoord.x = GET_X_LPARAM( lParam );
             leftButtonDragCoord.y = GET_Y_LPARAM( lParam );
-            m2dProj.Z = v3Add( m2dProj.Z, V3((float)leftButtonDragCoord.x - leftButtonDragStart.x, (float)leftButtonDragCoord.y - leftButtonDragStart.y, 0.0f ) );
+            m2dProj.Z = v3Add( m2dProj.Z, V3{(float)leftButtonDragCoord.x - leftButtonDragStart.x, (float)leftButtonDragCoord.y - leftButtonDragStart.y, 0.0f }) ;
             leftButtonDragStart = leftButtonDragCoord;
 		}
 	}

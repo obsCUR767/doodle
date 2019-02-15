@@ -19,7 +19,7 @@ DWORD WINAPI bench( void* p )
     const int kk( 1 );
 #else
     const int kk( 1 );
-#endif //_DEBUG
+#endif _DEBUG
 
 
     float* randBuf = (float*)malloc( sizeof( float ) * RANDBUFLEN );
@@ -31,7 +31,7 @@ DWORD WINAPI bench( void* p )
     for( size_t ss = 100000; ss < BUFLEN; ss *= 12, ss /= 8, count++ )
     {
         TICK( t1 );
-//        printf( "\ncount %d, bufsize %d\n", count, ss );
+        printf( "\ncount %d, bufsize %d\n", count, ss );
 
         M4* matbuf = (M4*)malloc( sizeof( M4 ) * ss ); if( !matbuf ) { printf( "******************** matbuf alloc error at %d Mbytes \n", sizeof( M4 ) * ss / 1024 / 1024 ); break; }
         M4 resmat;
@@ -41,17 +41,17 @@ DWORD WINAPI bench( void* p )
                 matbuf[i].a[k] = randBuf[( size_t( i * kk - 234 ) ) % RANDBUFLEN];
 
 
-//        TOCK( t1, t2, "fill: " );
+        TOCK( t1, t2, "fill: " );
         for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; resmat = mul4x4( matbuf[i], matbuf[i] ), i++, opCount++ );         if( ( ss % 1001 ) == 0 ) printf( "%f\n", resmat.a[0] );
-//        TOCK( t2, t3, "mul4x4 by val direct:\t" );
+        TOCK( t2, t3, "mul4x4 by val direct:\t" );
 
         for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; mul4x4( matbuf[i], matbuf[i], &resmat ), i++, opCount++ );         if( ( ss % 1001 ) == 0 ) printf( "%f\n", resmat.a[0] );
-//        TOCK( t3, t4, "mul4x4 by reference:\t" );
+        TOCK( t3, t4, "mul4x4 by reference:\t" );
 
         for( int k = 0; k < kk; k++ ) for( size_t i = 0; i < ss; resmat = mul4x4Indirect( matbuf[i], matbuf[i] ), i++, opCount++ ); if( ( ss % 1001 ) == 0 ) printf( "%f\n", resmat.a[0] );
-//        TOCK( t4, t5, "mul4x4 by val INdirect:\t" );
+        TOCK( t4, t5, "mul4x4 by val INdirect:\t" );
 
-//        printf( "\n" );
+        printf( "\n" );
         free( matbuf );
     }
 
@@ -66,7 +66,7 @@ DWORD WINAPI bench( void* p )
 void benchStart( )
 {
     TICK( t1 );
-    static const int NUMTHR(4);
+    static const int NUMTHR(1);
     HANDLE hv[NUMTHR];
     int cont[NUMTHR];
     for( int i = 0; i < NUMTHR; i++ )
@@ -85,4 +85,37 @@ void benchStart( )
         CloseHandle( hv[i] );
     exit( 0 );
 
+}
+
+
+struct S
+{
+    int a[4];
+};
+
+
+S s{1, 2, 3, 4};
+
+void invTest( )
+{
+
+    int _MUIE;
+
+    float v9[]{ 1.0f, 2.0f, 1.0f,
+        1.0f, 7.0f, 1.0f,
+        9.0f, 5.0f, 1.0f };
+    M3 m3(v9);
+    M3 m3inv;
+    invm3( m3, &m3inv );
+    m3inv.printMat();
+
+
+    //    m3.a = float[]{ 1.0f, 2.0f, 1.0f, 
+//            1.0f, 7.0f, 1.0f, 
+//            9.0f, 5.0f, 1.0f };
+
+//    M4 m4{ 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+    getc( stdin );
+    exit( 0 );
 }

@@ -10,4 +10,5 @@
                                 printf( "%s %f sec\n", msg, (tock.QuadPart - tick.QuadPart) / (float)freq.QuadPart );
 DWORD WINAPI bench( void* );
 void benchStart( );
+void invTest( );
 

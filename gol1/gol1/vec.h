@@ -2,8 +2,8 @@
 
 union V2
 {
-    V2( ): x( 0.0f ), y( 0.0f ) {}
-    V2( float _x, float _y ): x( _x ), y( _y ) {}
+//    V2( ): x( 0.0f ), y( 0.0f ) {}
+//    V2( float _x, float _y ): x( _x ), y( _y ) {}
     struct
     {
         float x, y;
@@ -14,8 +14,8 @@ union V2
 
 union V3
 {
-    V3( ): x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
-    V3( float _x, float _y, float _z ): x( _x ), y( _y ), z( _z ) {}
+//    V3( ): x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
+//    V3( float _x, float _y, float _z ): x( _x ), y( _y ), z( _z ) {}
     struct
     {
         float x, y, z;
@@ -26,8 +26,8 @@ union V3
 
 union V4
 {
-    V4( ): x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
-    V4( float _x, float _y, float _z, float _w ): x( _x ), y( _y ), z( _z ), w( _w ) {}
+//    V4( ): x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
+//    V4( float _x, float _y, float _z, float _w ): x( _x ), y( _y ), z( _z ), w( _w ) {}
     struct
     {
         float x, y, z, w;
@@ -169,7 +169,6 @@ inline float v4Len( V4 v )
 
 inline V4 v4Norm(V4 v)
 {
-	V4 Norm;
 	float fLen = v4Len(v);
 	v.x /= fLen;
 	v.y /= fLen;

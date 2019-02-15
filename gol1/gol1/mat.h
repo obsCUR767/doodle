@@ -1,10 +1,24 @@
 #pragma once
 
+const float IDEN2[ ] = {    1.0f, 0.0f,
+                            0.0f, 1.0f };
+
+const float IDEN3[ ] = {    1.0f, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f ,
+                            0.0f, 0.0f, 1.0f  };
+
+const float IDEN4[ ] = {    1.0f, 0.0f, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f };
+
+
+
 union M2
 {
-    M2( ) { initM2( ); }
+    M2( bool bInit = false ) { if( bInit ) initM2( ); }
     static const int CARD = 2;
-    void initM2( ) { memset( a, 0, sizeof( a ) ); for( int i = 0; i < CARD; i++ ) m[i][i] = 1.0f; }
+    inline void initM2( ) { memcpy( a, IDEN2, CARD * CARD * sizeof( float ) ); }
     void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
     void printMat( )
     {
@@ -32,15 +46,10 @@ union M2
 
 union M3
 {
-    M3( ) { initM3( ); }
-    static const int CARD = 3;
+    M3( bool bInit = false ) { if( bInit ) initM3( ); }
+    static const size_t CARD = 3;
     void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
-    void initM3( )
-    {
-        memset( a, 0, sizeof( a ) );
-        for( int i = 0; i < CARD; i++ )
-            m[i][i] = 1.0f;
-    }
+    inline void initM3( ) { memcpy( a, IDEN3, CARD * CARD * sizeof( float ) ); }
 
     void printMat( )
     {
@@ -70,9 +79,12 @@ union M3
 
 union M4
 {
-    M4( ) { initM4( ); }
-    static const int CARD = 4;
-    void initM4( ) { memset( a, 0, sizeof( a ) ); for( int i = 0; i < CARD; i++ ) m[i][i] = 1.0f; }
+    M4( bool bInit = false ) { if( bInit ) initM4( ); }
+//    M4( float v[16] ) : a( v ) {};
+//    M4(  ) { initM4( ); }
+
+    static const size_t CARD = 4;
+    inline void initM4( ) { memcpy( a, IDEN4, CARD * CARD * sizeof( float) ); }
     void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
     void printMat( )
     {
@@ -102,16 +114,18 @@ union M4
     float a[16];
 };
 
-
-
-
-
 inline void rotm2( float fAngle, M2* res )
 {
     res->a00 = res->a11 = cosf( fAngle );
     res->a10 = -( res->a01 = sinf( fAngle ) );
 }
 
+inline M2 rotm2( float fAngle )
+{
+    M2 res;
+    rotm2( fAngle, &res );
+    return res;
+}
 
 
 inline void rotm3( float fAngle, M3* res )
@@ -349,20 +363,62 @@ inline float detm2( M2 m )
     return m.a00 * m.a11 - m.a01 * m.a10;
 }
 
+inline bool invm2( M2 m, M2* res )
+{
+    float det = detm2( m );
+    if( fabs( det ) < 0.0001f )
+        return false;
+
+    M2 adj;
+    adj.a00 =  m.a11/det;
+    adj.a10 = -m.a10/det;
+    adj.a01 = -m.a01/det;
+    adj.a11 =  m.a00/det;
+
+    *res = adj;
+
+    return true;
+}
+
 inline float detm3( M3 m )
 {
-    /*
-        a00 a01 a02 a00 a01 a02
-        a10 a11 a12 a10 a11 a12
-        a20 a21 a22 a20 a21 a22
-     ( m.a00 * m.a11 * m.a22 ) + ( m.a01 * m.a12 * m.a20 ) + ( m.a02 * m.a10 * m.a21) - ( m.a00 * m.a12 * m.a21 ) - ( m.a01 * m.a10 * m.a22 ) - ( m.a02 * m.a11 * m.a20 )
-    */
     return ( m.a00 * m.a11 * m.a22 ) + ( m.a01 * m.a12 * m.a20 ) + ( m.a02 * m.a10 * m.a21 ) - ( m.a00 * m.a12 * m.a21 ) - ( m.a01 * m.a10 * m.a22 ) - ( m.a02 * m.a11 * m.a20 );
+}
+
+inline void cofm3( M3 src, M2* res, int _i, int _j )
+{
+    for( int j = 0, cofj = 0; j < src.CARD; j++ )
+    {
+        if( j == _j ) continue;
+        for( int i = 0, cofi = 0; i < src.CARD; i++ )
+        {
+            if( i == _i ) continue;
+            res->m[cofj][cofi] = src.m[j][i];
+            cofi++;
+        }
+        cofj++;
+    }
+}
+
+inline bool invm3( M3 m, M3* res )
+{
+    float det = detm3( m );
+    if( fabs( det ) < 0.0001f )
+        return false;
+
+    M2 cof;
+    for( int j = 0; j < m.CARD; j++ )
+        for( int i = 0; i < m.CARD; i++ )
+        {
+            cofm3( m, &cof, i, j );
+            res->m[j][i] = detm2( cof )/det;
+        }
+
+    return true;
 }
 
 inline float detm4( M4 m )
 {
-    //    ( m.a01 * m.a12 * m.a23 ) + ( m.a02 * m.a13 * m.a21 ) + ( m.a03 * m.a11 * m.a22 ) - ( m.a01 * m.a13 * m.a22 ) - ( m.a02 * m.a11 * m.a23 ) - ( m.a03 * m.a12 * m.a21 )
     return
         +m.a00 * ( ( m.a11 * m.a22 * m.a33 ) + ( m.a12 * m.a23 * m.a31 ) + ( m.a13 * m.a21 * m.a32 ) - ( m.a11 * m.a23 * m.a32 ) - ( m.a12 * m.a21 * m.a33 ) - ( m.a13 * m.a22 * m.a31 ) )
         - m.a10 * ( ( m.a01 * m.a22 * m.a33 ) + ( m.a02 * m.a23 * m.a31 ) + ( m.a03 * m.a21 * m.a32 ) - ( m.a01 * m.a23 * m.a32 ) - ( m.a02 * m.a21 * m.a33 ) - ( m.a03 * m.a22 * m.a31 ) )
@@ -371,3 +427,34 @@ inline float detm4( M4 m )
 }
 
 
+inline M3 cofm4( M4 src, int _i, int _j )
+{
+    M3 tmp;
+    for( int j = 0, cofj = 0; j < src.CARD; j++ )
+    {
+        if( j == _j ) continue;
+        for( int i = 0, cofi = 0; i < src.CARD; i++ )
+        {
+            if( i == _i ) continue;
+            tmp.m[cofj][cofi] = src.m[j][i];
+            cofi++;
+        }
+        cofj++;
+    }
+
+    return tmp;
+}
+
+
+inline bool invm4( M4 m, M3* res )
+{
+    float det = detm4( m );
+    if( fabs( det ) < 0.0001f )
+        return false;
+
+    for( int j = 0; j < m.CARD; j++ )
+        for( int i = 0; i < m.CARD; i++ )
+            res->m[j][i] = detm3( cofm4( m, i, j ) ) / det;
+
+    return true;
+}
