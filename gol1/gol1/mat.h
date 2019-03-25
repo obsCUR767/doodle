@@ -15,8 +15,13 @@ const float IDEN4[ ] = {    1.0f, 0.0f, 0.0f, 0.0f,
 
 
 union M2
-{
-    M2( bool bInit = false ) { if( bInit ) initM2( ); }
+{                             
+    M2( float _a00, float _a01,
+        float _a10, float _a11 ) : 
+        a00( _a00 ), a01( _a01 ),
+        a10( _a10 ), a11( _a11 ) {}
+
+        M2( bool bInit = false ) { if( bInit ) initM2( ); }
     static const int CARD = 2;
     inline void initM2( ) { memcpy( a, IDEN2, CARD * CARD * sizeof( float ) ); }
     void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
@@ -46,6 +51,14 @@ union M2
 
 union M3
 {
+    M3( float _a00, float _a01, float _a02, 
+        float _a10, float _a11, float _a12,
+        float _a20, float _a21, float _a22 ) :
+        a00( _a00 ), a01( _a01 ), a02( _a02 ),
+        a10( _a10 ), a11( _a11 ), a12( _a12 ),
+        a20( _a20 ), a21( _a21 ), a22( _a22 ) {}
+
+
     M3( bool bInit = false ) { if( bInit ) initM3( ); }
     static const size_t CARD = 3;
     void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
@@ -79,6 +92,14 @@ union M3
 
 union M4
 {
+    M4( float _a00, float _a01, float _a02, float _a03,
+        float _a10, float _a11, float _a12, float _a13,
+        float _a20, float _a21, float _a22, float _a23,
+        float _a30, float _a31, float _a32, float _a33 ) :
+        a00( _a00 ), a01( _a01 ), a02( _a02 ), a03( _a03 ),
+        a10( _a10 ), a11( _a11 ), a12( _a12 ), a13( _a13 ),
+        a20( _a20 ), a21( _a21 ), a22( _a22 ), a23( _a23 ),
+        a30( _a30 ), a31( _a31 ), a32( _a32 ), a33( _a33 ) {}
     M4( bool bInit = false ) { if( bInit ) initM4( ); }
 //    M4( float v[16] ) : a( v ) {};
 //    M4(  ) { initM4( ); }
@@ -371,8 +392,8 @@ inline bool invm2( M2 m, M2* res )
 
     M2 adj;
     adj.a00 =  m.a11/det;
-    adj.a10 = -m.a10/det;
-    adj.a01 = -m.a01/det;
+    adj.a01 = -m.a10/det;
+    adj.a10 = -m.a01/det;
     adj.a11 =  m.a00/det;
 
     *res = adj;
@@ -385,15 +406,15 @@ inline float detm3( M3 m )
     return ( m.a00 * m.a11 * m.a22 ) + ( m.a01 * m.a12 * m.a20 ) + ( m.a02 * m.a10 * m.a21 ) - ( m.a00 * m.a12 * m.a21 ) - ( m.a01 * m.a10 * m.a22 ) - ( m.a02 * m.a11 * m.a20 );
 }
 
-inline void cofm3( M3 src, M2* res, int _i, int _j )
+inline void cofm3( M3* src, M2* res, int _i, int _j )
 {
-    for( int j = 0, cofj = 0; j < src.CARD; j++ )
+    for( int j = 0, cofj = 0; j < src->CARD; j++ )
     {
         if( j == _j ) continue;
-        for( int i = 0, cofi = 0; i < src.CARD; i++ )
+        for( int i = 0, cofi = 0; i < src->CARD; i++ )
         {
             if( i == _i ) continue;
-            res->m[cofj][cofi] = src.m[j][i];
+            res->m[cofj][cofi] = src->m[j][i];
             cofi++;
         }
         cofj++;
@@ -410,8 +431,8 @@ inline bool invm3( M3 m, M3* res )
     for( int j = 0; j < m.CARD; j++ )
         for( int i = 0; i < m.CARD; i++ )
         {
-            cofm3( m, &cof, i, j );
-            res->m[j][i] = detm2( cof )/det;
+            cofm3( &m, &cof, j, i );
+            res->m[j][i] = (((i+j)&1)?-1:1)*detm2( cof )/det;
         }
 
     return true;
@@ -427,16 +448,16 @@ inline float detm4( M4 m )
 }
 
 
-inline M3 cofm4( M4 src, int _i, int _j )
+inline M3 cofm4( M4* src, int _i, int _j )
 {
     M3 tmp;
-    for( int j = 0, cofj = 0; j < src.CARD; j++ )
+    for( int j = 0, cofj = 0; j < src->CARD; j++ )
     {
         if( j == _j ) continue;
-        for( int i = 0, cofi = 0; i < src.CARD; i++ )
+        for( int i = 0, cofi = 0; i < src->CARD; i++ )
         {
             if( i == _i ) continue;
-            tmp.m[cofj][cofi] = src.m[j][i];
+            tmp.m[cofj][cofi] = src->m[j][i];
             cofi++;
         }
         cofj++;
@@ -446,7 +467,7 @@ inline M3 cofm4( M4 src, int _i, int _j )
 }
 
 
-inline bool invm4( M4 m, M3* res )
+inline bool invm4( M4 m, M4* res )
 {
     float det = detm4( m );
     if( fabs( det ) < 0.0001f )
@@ -454,7 +475,7 @@ inline bool invm4( M4 m, M3* res )
 
     for( int j = 0; j < m.CARD; j++ )
         for( int i = 0; i < m.CARD; i++ )
-            res->m[j][i] = detm3( cofm4( m, i, j ) ) / det;
+            res->m[j][i] = ( ( ( i + j ) & 1 ) ? -1 : 1 )* detm3( cofm4( &m, j, i ) ) / det;
 
     return true;
 }

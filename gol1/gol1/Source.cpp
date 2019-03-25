@@ -75,7 +75,7 @@ size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 
 float zoom( 10.0f );
 float fSgn(0.1f);
 V2 screenOffs;
-M3 m2dProj;
+M3 m2dProj(true);
 
 V2* sproket1;
 size_t sproket1Size;
@@ -85,7 +85,7 @@ V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
     size_t nTeethBufGeomSize, nCrownBufSize;
     float fAngleIncrement = (float)M_PI/(float)nNumTeeth;
     float fAngle = 0.0f;
-    M2 rot;
+    M2 rot(true);
     nTeethBufGeomSize = ( 4 * nNumTeeth + 1 );
     nCrownBufSize = (size_t)( fRadius * 0.66f ) + 4;
     V2* buf = (V2*)malloc( sizeof( V2 ) * nTeethBufGeomSize );
@@ -150,7 +150,7 @@ void Draw( float fDeltaTime)
 	SelectObject(hMemDC, GetStockObject(WHITE_PEN));
 
 	fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
-    M3 rot;
+    M3 rot(true);
     rotm3(fAngle, &rot);
 
     DrawV2BufTran( sproket1, sproket1Size, &rot );
@@ -188,7 +188,8 @@ void Loop(HWND hwnd)
 void Ding()
 {
 
-    invTest();
+//    benchStart( );
+//    invTest();
 
     const float RADIUS( 10.0f );
     const float TURNS( 10.0f );
@@ -215,8 +216,15 @@ void Ding()
 }
 
 
+void (*p)();
+
+void f()
+{};
+
 void main(void)
 {
+    p = f;
+
 	QueryPerformanceCounter(&first);
     last = first;
     curr = first;
@@ -226,6 +234,8 @@ void main(void)
     vBuf = (V3*)malloc( sizeof( V3 ) * NPOINTS );
 
     Ding();
+
+    int print = (int)printf - 'f';
 
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));

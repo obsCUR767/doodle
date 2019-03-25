@@ -56,44 +56,57 @@ inline V2 v2Norm(V2 v)
     return tmp;
 }
 
-inline V2 v2NormDirect( V2 v )
+
+inline void v2Scale( V2 v, float _scale, V2* res )
 {
-    float fLen = v2Len( v );
-    v.x /= fLen;
-    v.y /= fLen;
-    return v;
+    res->x = v.x * _scale;
+    res->y = v.y * _scale;
 }
 
 inline V2 v2Scale(V2 v, float _scale)
 {
 	V2 tmp;
-	tmp.x = v.x * _scale;
-	tmp.y = v.y * _scale;
-	return tmp;
+    v2Scale( v, _scale, &tmp );
+    return tmp;
 }
 
-inline V2 v2Neg(V2 v)
+inline V2 v2Neg(V2 v, V2* res)
 {
-	V2 tmp;
-	tmp.x = -v.x;
-	tmp.y = -v.y;
-	return tmp;
+	res->x = -v.x;
+	res->y = -v.y;
+}
+
+inline V2 v2Neg( V2 v )
+{
+    V2 tmp;
+    v2Neg( v, &tmp );
+    return tmp;
+}
+
+inline V2 v2Add( V2 v1, V2 v2, V2* res )
+{
+    res->x = v1.x + v2.x;
+    res->y = v1.y + v2.y;
 }
 
 inline V2 v2Add(V2 v1, V2 v2)
 {
 	V2 tmp;
-	tmp.x = v1.x + v2.x;
-	tmp.y = v1.y + v2.y;
+    v2Add( v1, v2, &tmp );
 	return tmp;
 }
 
-inline V2 v2Sub(V2 v1, V2 v2)
+inline V2 v2Sub(V2 v1, V2 v2, V2* res)
 {
-	V2 tmp;
-	tmp.x = v1.x - v2.x;
-	tmp.y = v1.y - v2.y;
-	return tmp;
+	res->x = v1.x - v2.x;
+	res->y = v1.y - v2.y;
+}
+
+inline V2 v2Sub( V2 v1, V2 v2 )
+{
+    V2 tmp;
+    v2Sub( v1, v2, &tmp );
+    return tmp;
 }
 
 inline float v3Len( V3 v )
