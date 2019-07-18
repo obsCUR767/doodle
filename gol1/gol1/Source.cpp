@@ -39,16 +39,16 @@ HDC hMemDC;
 HDC hBackDC;
 
 
-POINT *vp;
-const int NPOINTS(10000);
+const int NPOINTS(10);
+POINT *vp, *vpp;
+//POINT vp[NPOINTS], vpp[NPOINTS];
+DWORD *ib;
+//DWORD ib[NPOINTS];
+size_t vpIndex( 0 );
+size_t ibIndex(0);
 
-V3 *vBuf;
 
-struct cacat
-{
-    float x;
-    char c;
-};
+//V3 *vBuf;
 
 V2 vbuf[ ] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f }, { 1.0f, -1.0f } };
 V3 v3buf[] = { { 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } };
@@ -58,7 +58,7 @@ size_t ibuf[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
 IndexedPrim2D iSq;
 
 
-V2 sq[4] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { 1.0f, -1.0f } };
+V2 sq[5] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f } };
 const float TIP( 5.0f );
 const float VAL( 0.30f );
 V2 star[] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
@@ -72,90 +72,162 @@ V3 cubeVerts[] = {
 
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
-float zoom( 10.0f );
+float zoom( 1.0f );
 float fSgn(0.1f);
 V2 screenOffs;
 M3 m2dProj(true);
+M3 scaleMatRes;
 
 V2* sproket1;
 size_t sproket1Size;
 
+V2* wheel1;
+size_t wheel1Size;
+
+
+size_t numLines;
+
 V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
 {
-    size_t nTeethBufGeomSize, nCrownBufSize;
-    float fAngleIncrement = (float)M_PI/(float)nNumTeeth;
-    float fAngle = 0.0f;
-    M2 rot(true);
+    size_t nTeethBufGeomSize/*, nCrownBufSize*/;
     nTeethBufGeomSize = ( 4 * nNumTeeth + 1 );
-    nCrownBufSize = (size_t)( fRadius * 0.66f ) + 4;
     V2* buf = (V2*)malloc( sizeof( V2 ) * nTeethBufGeomSize );
-    float toothRatio( 1.0f - 1.0f / ( nNumTeeth/4 + 5.0f ));
-    V2 temp;
-    for( int i = 0; i < ( 2 * nNumTeeth ); i++, fAngle += fAngleIncrement )
-    {
-        if( i % 2 )
-        {
-            rotm2( fAngle, &rot );
-            temp.x = fRadius;
-            mulv2xm2( temp, rot, buf + ( i * 2 ) );
-            rotm2( fAngle + 0.02f, &rot );
-            temp.x = fRadius * toothRatio;
-            mulv2xm2( temp, rot, buf + ( i * 2 + 1) );
-        }
-        else
-        {
-            rotm2( fAngle - 0.02f, &rot );
-            temp.x = fRadius * toothRatio;
-            mulv2xm2( temp, rot, buf + ( i * 2 ) );
-            rotm2( fAngle, &rot );
-            temp.x = fRadius;
-            mulv2xm2( temp, rot, buf + ( i * 2 + 1 ) );
-        }
-    }
-
-    rotm2( 0.0f, &rot );
-    temp.x = fRadius * toothRatio;
-    temp.y = 0.0f;
-    mulv2xm2( temp, rot, buf + nTeethBufGeomSize - 1 );
-
-
-//    for( int i = 0; i < nCrown
-
+//    float fAngleIncrement = (float)M_PI/(float)nNumTeeth;
+//    float fAngle = 0.0f;
+//    M2 rot(true);
+//    nCrownBufSize = (size_t)( fRadius * 0.66f ) + 4;
+//    float toothRatio( 1.0f - 1.0f / ( nNumTeeth/4 + 5.0f ));
+//    V2 temp;
+//    for( int i = 0; i < ( 2 * nNumTeeth ); i++, fAngle += fAngleIncrement )
+//    {
+//        if( i % 2 )
+//        {
+//            rotm2( fAngle, &rot );
+//            temp.x = fRadius;
+//            mulv2xm2( temp, rot, buf + ( i * 2 ) );
+//            rotm2( fAngle + 0.02f, &rot );
+//            temp.x = fRadius * toothRatio;
+//            mulv2xm2( temp, rot, buf + ( i * 2 + 1) );
+//        }
+//        else
+//        {
+//            rotm2( fAngle - 0.02f, &rot );
+//            temp.x = fRadius * toothRatio;
+//            mulv2xm2( temp, rot, buf + ( i * 2 ) );
+//            rotm2( fAngle, &rot );
+//            temp.x = fRadius;
+//            mulv2xm2( temp, rot, buf + ( i * 2 + 1 ) );
+//        }
+//    }
+//
+//    rotm2( 0.0f, &rot );
+//    temp.x = fRadius * toothRatio;
+//    temp.y = 0.0f;
+//    mulv2xm2( temp, rot, buf + nTeethBufGeomSize - 1 );
+//
+//
+////    for( int i = 0; i < nCrown
+//
     *nBufSize = nTeethBufGeomSize;
 
     return buf;
 }
 
+V2* GenWheel( int _tess, float _fRadius, size_t* nBufSize )
+{
+   V2* vbuf = (V2*)calloc( _tess + 1, sizeof( V2 ) );
+   *nBufSize = _tess + 1;
+
+   V2 radius{ _fRadius, 0.0f };
+   float fAngleDelta = 2.0f * (float)M_PI / (float)_tess;
+   float fAngle = 0.0f;
+
+   for( int i = 0; i < _tess; i++ )
+   {
+      M2 m;
+      mulm2xv2( rotm2( fAngle, &m ), &radius, vbuf + i );
+      fAngle += fAngleDelta;
+   }
+
+   vbuf[_tess] = vbuf[0];
+
+   return vbuf;
+}
+
+
+void flushvb()
+{
+   PolyPolyline( hMemDC, vpp, ib, ibIndex );
+   vpIndex = 0;
+   ibIndex = 0;
+   ib[ibIndex] = 0;
+}
+
 
 void DrawV2BufTran( V2* buf, int n, M3* tran )
 {
+   ib[ibIndex] = 0;
+   
+    V3 temp, src;
     for( int i = 0; i < n; i++ )
     {
-        V3 src;src.x = buf[i].x; src.y = buf[i].y; src.z = 1.0f;
-        V3 temp, temp1;
-        mulv3xm3( src, *tran, &temp );
-        mulv3xm3( temp, m2dProj, &temp1 );
-        vp[i].x = (LONG)( temp1.x );
-        vp[i].y = (LONG)( temp1.y );
+        src.x = buf[i].x; src.y = buf[i].y; src.z = 1.0f;
+        mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &scaleMatRes, &temp ), &m2dProj, &temp );
+
+        vpp[vpIndex].x = (LONG)( temp.x );
+        vpp[vpIndex].y = (LONG)( temp.y );
+
+        ib[ibIndex]++;
+        vpIndex++;
+
+        if( vpIndex == NPOINTS || ibIndex == NPOINTS )
+        {
+           flushvb( );
+        }
+ 
     }
 
-    Polyline( hMemDC, vp, n );
+//    ib[ibIndex]++;
+    ibIndex++;
+
+//    Polyline( hMemDC, vp, n );
+    numLines += n;
 }
 
 
 void Draw( float fDeltaTime)
 {
-    BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
+   vpIndex = 0;
+   ibIndex = 0;
+   
+   BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
-	SelectObject(hMemDC, GetStockObject(WHITE_PEN));
+   SelectObject(hMemDC, GetStockObject(WHITE_PEN));
 
-	fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
-    M3 rot(true);
-    rotm3(fAngle, &rot);
+   fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
+   M3 rot(true);
+   rotm3(fAngle, &rot);
 
-    DrawV2BufTran( sproket1, sproket1Size, &rot );
+   int numX = 5, numY = 5;
+   for( int i = 0; i < numX; i++ )
+      for( int j = 0; j < numY; j++ )
+      {
+         M3 rotL;
+         rotm3(  (( 4.0f  -sqrtf( (i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) )) * fAngle ), &rotL );
+         M3 gridM;
+         V3 tran( 3.10f * ( (float)i - numX * 0.5f) , 3.10f * ( (float)j - numY * 0.5f) , 1.0f );
 
-    BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
+         gridM.a20 = tran.x;
+         gridM.a21 = tran.y;
+         mul3x3( &rotL, &gridM, &gridM );
+         mul3x3( &gridM, &rot, &gridM );
+         DrawV2BufTran( wheel1, wheel1Size, &gridM );
+         DrawV2BufTran( sq, 5, &gridM );
+      }
+
+   flushvb();
+
+   BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
 }
 
 
@@ -170,13 +242,14 @@ void Loop(HWND hwnd)
 	static float fSmoothDelta = fDeltaTime;  //filtered
 	fSmoothDelta = (9.0f * fSmoothDelta + fDeltaTime) * 0.1f;
 
-	Draw( fDeltaTime );
+   numLines = 0;
+   Draw( fDeltaTime );
 
 
 	fTraceTick += fDeltaTime;
 	if (fTraceTick > 1.0)
 	{
-		printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta);
+		printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, numLines );
 		fTraceTick = 0.0;
 	}
 
@@ -187,55 +260,27 @@ void Loop(HWND hwnd)
 
 void Ding()
 {
+   srand((int)time(0));
 
-//    benchStart( );
-//    invTest();
+    sproket1 = GenSproket( 25, 1.0f, &sproket1Size );
+    wheel1= GenWheel( 25, 1.0f, &wheel1Size );
 
-    const float RADIUS( 10.0f );
-    const float TURNS( 10.0f );
-    const float HEIGHT( 20.0f );
-
-    for( int i = 0; i < NPOINTS; i++ )
-    {
-        float ratio = (float)i/NPOINTS;
-        float angle = ratio * 2.0f * (float)M_PI * TURNS;
-        vBuf[i].x = RADIUS * cosf( angle );
-        vBuf[i].y = RADIUS * sinf( angle );
-        vBuf[i].z = ( ratio - 0.5f ) * HEIGHT;
-    }
-
-    m2dProj.initM3();
-
-
-    iSq.iBuf = ibuf;
-    iSq.iBufSize = sizeof( ibuf )/sizeof(size_t)/2;
-    iSq.vBuf = vbuf;
-    iSq.vBufSize = sizeof( vbuf )/sizeof(V3);
-
-    sproket1 = GenSproket( 25, 2.0f, &sproket1Size );
 }
 
 
-void (*p)();
-
-void f()
-{};
-
 void main(void)
 {
-    p = f;
-
 	QueryPerformanceCounter(&first);
     last = first;
     curr = first;
 	QueryPerformanceFrequency(&freq);
 
-    vp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
-    vBuf = (V3*)malloc( sizeof( V3 ) * NPOINTS );
+   ib = (DWORD*)malloc( sizeof( DWORD ) * NPOINTS );
+   vpp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
+   vp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
+   //vBuf = (V3*)malloc( sizeof( V3 ) * NPOINTS );
 
     Ding();
-
-    int print = (int)printf - 'f';
 
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
@@ -271,17 +316,38 @@ void main(void)
 		}
 	} while (msg.message != WM_QUIT);
 
-    if( sproket1 ) { free( sproket1 ); sproket1 = NULL; };
-    free( vBuf );
-    free( vp );
+   if( sproket1 ) { free( sproket1 ); sproket1 = NULL; };
+   if( wheel1 ) { free( wheel1 ); wheel1 = NULL; };
+
+   //if( vBuf ) { free( vBuf ); vBuf = NULL; }
+   free( vp );
+   free( vpp );
+   free( ib );
 }
 
 
 void Proj()
 {
+
+
+    M3 scaleMatTran, scaleMatTranInv, scaleMatScale;
     float fTemp( float( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.1f );
-    scalem3( V3{ fTemp, -fTemp, 1.0f }, &m2dProj );
-    translatem3( v3Scale( V3{ float( clRSize.x ), float( clRSize.y ), 0.0f }, 0.5f ), &m2dProj );
+    V3 scaleVec( fTemp * zoom, -fTemp * zoom, 1.0f );
+    V3 centerOffset( float( clRSize.x ) * 0.5f, float( clRSize.y ) * 0.5f, 0.0f );
+
+
+    V3 zoomCenter( ( 2.0f * screenOffs.x - clRSize.x ) / clRSize.x , ( 2.0f * screenOffs.y - clRSize.y ) / clRSize.y, 1.0f );
+    printf( "scalevec %fx%f\n", scaleVec.x, scaleVec.y );
+
+
+    translatem3( &zoomCenter, &scaleMatTran );
+    invm3( &scaleMatTran, &scaleMatTranInv );
+    scalem3( &scaleVec, &scaleMatScale );
+    mul3x3( mul3x3( &scaleMatTranInv, &scaleMatScale, &scaleMatRes ), &scaleMatTran, &scaleMatRes );
+
+//    translatem3( &centerOffset, &m2dProj );
+//    mul3x3( &m2dProj, &scaleMatRes, &m2dProj );
+
 }
 
 void Aquire(HWND hwnd, bool bInit = false )
@@ -359,12 +425,12 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// wheel move coords in screen space, this converts in clientspace
 		ScreenToClient(hwnd, &p);
 
-        screenOffs.x = (float)p.x - clRect.left;
-        screenOffs.y = (float)p.y - clRect.top;
+      screenOffs.x = (float)p.x - clRect.left;
+      screenOffs.y = (float)p.y - clRect.top;
 
-        printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
+//      printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
 
-		if (wParam & (1 << 31))
+		if (!(wParam & (1 << 31)))
 		{
 			fSgn = 10.0f * fMultiplier;
 			zoom *= fMultiplier;
@@ -375,7 +441,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			zoom /= fMultiplier;
 		}
 
-        Proj();
+      Proj();
     }
 
 	if (msg == WM_SIZE)
@@ -399,7 +465,8 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             POINT leftButtonDragCoord;
             leftButtonDragCoord.x = GET_X_LPARAM( lParam );
             leftButtonDragCoord.y = GET_Y_LPARAM( lParam );
-            m2dProj.Z = v3Add( m2dProj.Z, V3{(float)leftButtonDragCoord.x - leftButtonDragStart.x, (float)leftButtonDragCoord.y - leftButtonDragStart.y, 0.0f }) ;
+            V3 moveOffset( (float)leftButtonDragCoord.x - leftButtonDragStart.x, (float)leftButtonDragCoord.y - leftButtonDragStart.y, 0.0f );
+            v3Add( &m2dProj.Z, &moveOffset, &m2dProj.Z ) ;
             leftButtonDragStart = leftButtonDragCoord;
 		}
 	}

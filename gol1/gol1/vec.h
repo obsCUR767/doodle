@@ -2,8 +2,9 @@
 
 union V2
 {
-//    V2( ): x( 0.0f ), y( 0.0f ) {}
-//    V2( float _x, float _y ): x( _x ), y( _y ) {}
+    V2( ): x( 0.0f ), y( 0.0f ) {}
+    V2( float _x, float _y ): x( _x ), y( _y ) {}
+    V2( const float* _pf ) { v[0]=_pf[0]; v[1] = _pf[1]; }
     struct
     {
         float x, y;
@@ -14,8 +15,9 @@ union V2
 
 union V3
 {
-//    V3( ): x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
-//    V3( float _x, float _y, float _z ): x( _x ), y( _y ), z( _z ) {}
+    V3( ): x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
+    V3( float _x, float _y, float _z ): x( _x ), y( _y ), z( _z ) {}
+    V3( const float* _pf ) { v[0] = _pf[0]; v[1] = _pf[1];  v[2] = _pf[2];}
     struct
     {
         float x, y, z;
@@ -26,8 +28,9 @@ union V3
 
 union V4
 {
-//    V4( ): x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
-//    V4( float _x, float _y, float _z, float _w ): x( _x ), y( _y ), z( _z ), w( _w ) {}
+    V4( ): x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
+    V4( float _x, float _y, float _z, float _w ): x( _x ), y( _y ), z( _z ), w( _w ) {}
+    V4( const float* _pf ) { v[0] = _pf[0]; v[1] = _pf[1]; v[2] = _pf[2]; v[3] = _pf[3]; }
     struct
     {
         float x, y, z, w;
@@ -36,174 +39,214 @@ union V4
     static const int CARD = 4;
 };
 
-
-inline float v2Len( V2 v )
+/*
+    Len  
+    Norm 
+    Scale
+    Neg  
+    Add  
+    Sub  
+*/
+inline float v2Len( const V2* v )
 {
-    return sqrtf( v.x * v.x + v.y * v.y );
+    return sqrtf( v->x * v->x + v->y * v->y );
 };
 
-inline void v2Norm( V2 v, V2*res )
+inline V2* v2Norm( const V2* v, V2*res )
 {
     float fLen = v2Len( v );
-    res->x = v.x / fLen;
-    res->y = v.y / fLen;
+    res->x = v->x / fLen;
+    res->y = v->y / fLen;
+    return res;
 }
 
-inline V2 v2Norm(V2 v)
+inline V2* v2Scale( const V2* v, float _scale, V2* res )
 {
-	V2 tmp;
-    v2Norm(v, &tmp);
-    return tmp;
+    res->x = v->x * _scale;
+    res->y = v->y * _scale;
+    return res;
+}
+
+inline V2* v2Neg(const V2* v, V2* res)
+{
+	res->x = -v->x;
+	res->y = -v->y;
+   return res;
 }
 
 
-inline void v2Scale( V2 v, float _scale, V2* res )
+inline V2* v2Add( const V2* v1, const V2* v2, V2* res )
 {
-    res->x = v.x * _scale;
-    res->y = v.y * _scale;
+    res->x = v1->x + v2->x;
+    res->y = v1->y + v2->y;
+    return res;
 }
 
-inline V2 v2Scale(V2 v, float _scale)
+
+inline V2* v2Sub(const V2* v1, const V2* v2, V2* res)
 {
-	V2 tmp;
-    v2Scale( v, _scale, &tmp );
-    return tmp;
+	res->x = v1->x - v2->x;
+	res->y = v1->y - v2->y;
+   return res;
 }
 
-inline V2 v2Neg(V2 v, V2* res)
+
+inline float v2Dot( const V2* v1, const V2* v2 )
 {
-	res->x = -v.x;
-	res->y = -v.y;
+    return v1->x * v2->x + v1->y * v2->y;
 }
 
-inline V2 v2Neg( V2 v )
-{
-    V2 tmp;
-    v2Neg( v, &tmp );
-    return tmp;
-}
 
-inline V2 v2Add( V2 v1, V2 v2, V2* res )
-{
-    res->x = v1.x + v2.x;
-    res->y = v1.y + v2.y;
-}
 
-inline V2 v2Add(V2 v1, V2 v2)
-{
-	V2 tmp;
-    v2Add( v1, v2, &tmp );
-	return tmp;
-}
+/***************************
+    v3
+***************************/
 
-inline V2 v2Sub(V2 v1, V2 v2, V2* res)
-{
-	res->x = v1.x - v2.x;
-	res->y = v1.y - v2.y;
-}
 
-inline V2 v2Sub( V2 v1, V2 v2 )
-{
-    V2 tmp;
-    v2Sub( v1, v2, &tmp );
-    return tmp;
-}
 
-inline float v3Len( V3 v )
+
+
+inline float v3Len( const V3* v )
 {
-    return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z );
+    return sqrtf( v->x * v->x + v->y * v->y + v->z * v->z );
 };
 
-inline void v3Norm( V3 v, V3* res )
+inline V3* v3Norm( const V3* v, V3* res )
 {
     float fLen = v3Len( v );
     res->x /= fLen;
     res->y /= fLen;
     res->z /= fLen;
+
+    return res;
 }
 
-inline V3 v3Norm(V3 v)
+
+inline V3* v3Scale( const V3* v, float _scale, V3* res )
 {
-	V3 tmp;
-    v3Norm( v, &tmp);
-	return tmp;
+    res->x = v->x * _scale;
+    res->y = v->y * _scale;
+    res->z = v->z * _scale;
+
+    return res;
 }
 
-inline V3 v3NormDirect( V3 v )
+inline V3* v3Neg( const V3* v, V3* res )
 {
-    V3 tmp;
-    float fLen = v3Len( v );
-    tmp.x /= fLen;
-    tmp.y /= fLen;
-    tmp.z /= fLen;
-    return tmp;
+    res->x = -v->x;
+    res->y = -v->y;
+    res->z = -v->z;
+    return res;
 }
 
-inline V3 v3Scale(V3 v, float _scale)
+inline V3* v3Add( const V3* v1, const V3* v2, V3* res)
 {
-	V3 tmp;
-	tmp.x = v.x * _scale;
-	tmp.y = v.y * _scale;
-	tmp.z = v.z * _scale;
-	return tmp;
+	res->x = v1->x + v2->x;
+	res->y = v1->y + v2->y;
+	res->z = v1->z + v2->z;
+   return res;
 }
 
-inline V3 v3Neg(V3 v)
+
+inline V3* v3Sub( const V3* v1, const V3* v2, V3* res )
 {
-	V3 tmp;
-	tmp.x = -v.x;
-	tmp.y = -v.y;
-	tmp.z = -v.z;
-	return tmp;
+    res->x = v1->x - v2->x;
+    res->y = v1->y - v2->y;
+    res->z = v1->z - v2->z;
+    return res;
 }
 
-inline V3 v3Add(V3 v1, V3 v2)
+
+inline float v3Dot( const V3* v1, const V3* v2 )
 {
-	V3 tmp;
-	tmp.x = v1.x + v2.x;
-	tmp.y = v1.y + v2.y;
-	tmp.z = v1.z + v2.z;
-	return tmp;
+    return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
-inline V3 v3Sub(V3 v1, V3 v2)
+inline V3* v3Cross( const V3* v1, const V3* v2, V3* res )
 {
-	V3 tmp;
-	tmp.x = v1.x - v2.x;
-	tmp.y = v1.y - v2.y;
-	tmp.z = v1.z - v2.z;
-	return tmp;
-}
 
-inline float v4Len( V4 v )
+/*    X * Y = Z ( 1, 0, 0 ) * ( 0, 1, 0 ) = ( 0, 0, 1 )   res.z = v1.x * v2.y - v2.x * v1.y, Y * X = -Z, ( 0, 1, 0 ) * ( 1, 0, 0 ) = ( 0, 0, -1 ) - v2.x * v1.y
+      Y * Z = X
+      Z * X = Y
+*/
+
+    res->x = v1->y * v2->z - v2->y * v1->z; // x = y * z, (0,1,0)*(0,0,1)=(1,0,0), (0,0,1)*(0,1,0) = (
+    res->y = v1->z * v2->x - v2->z * v1->x;
+    res->z = v1->x * v2->y - v2->x * v1->y;
+    return res;
+}
+/*************************
+
+    v4
+
+**************************/
+
+
+/*
+    Len
+    Norm
+    Scale
+    Neg
+    Add
+    Sub
+    dot
+    cross
+*/
+
+inline float v4Len( const V4* v )
 {
-    return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w );
+    return sqrtf( v->x * v->x + v->y * v->y + v->z * v->z + v->w * v->w );
 };
 
-inline V4 v4Norm(V4 v)
+
+inline V4* v4Scale( const V4* v, float _scale, V4* res )
 {
-	float fLen = v4Len(v);
-	v.x /= fLen;
-	v.y /= fLen;
-	v.z /= fLen;
-	v.w /= fLen;
-	return v;
+    res->x *= _scale;
+    res->y *= _scale;
+    res->z *= _scale;
+    res->w *= _scale;
+    return res;
 }
 
-inline V4 v4Scale(V4 v, float _scale)
+inline V4* v4Norm( const V4* v, V4* res )
 {
-	v.x *= _scale;
-	v.y *= _scale;
-	v.z *= _scale;
-	v.w *= _scale;
-	return v;
+    float fLen = v4Len( v );
+    v4Scale(v, fLen, res );
+    return res;
 }
 
-inline V4 v4Sub(V4 v1, V4 v2)
+
+inline V4* v4Neg( const V4* v, V4* res )
 {
-	v1.x -= v2.x;
-	v1.y -= v2.y;
-	v1.z -= v2.z;
-	v1.w -= v2.w;
-	return v1;
+    res->x = -v->x;
+    res->y = -v->y;
+    res->z = -v->z;
+    res->w = -v->w;
+    return res;
 }
+
+
+inline V4* v4Add( const V4* v1, const V4* v2, V4* res )
+{
+    res->x = v1->x + v2->x;
+    res->y = v1->y + v2->y;
+    res->z = v1->z + v2->z;
+    res->w = v1->w + v2->w;
+    return res;
+}
+
+inline V4* v4Sub(const V4* v1, const V4* v2, V4* res)
+{
+    res->x = v1->x - v2->x;
+    res->y = v1->y - v2->y;
+    res->z = v1->z - v2->z;
+    res->w = v1->w - v2->w;
+    return res;
+}
+
+
+inline float v4Dot( const V4* v1, const V4* v2 )
+{
+    return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z + v1->w * v2->w;
+}
+
