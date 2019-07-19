@@ -39,16 +39,14 @@ HDC hMemDC;
 HDC hBackDC;
 
 
-const int NPOINTS(10);
+const int NPOINTS(111);
 POINT *vp, *vpp;
-//POINT vp[NPOINTS], vpp[NPOINTS];
 DWORD *ib;
-//DWORD ib[NPOINTS];
+
 size_t vpIndex( 0 );
 size_t ibIndex(0);
 
 
-//V3 *vBuf;
 
 V2 vbuf[ ] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f }, { 1.0f, -1.0f } };
 V3 v3buf[] = { { 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } };
@@ -92,43 +90,6 @@ V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
     size_t nTeethBufGeomSize/*, nCrownBufSize*/;
     nTeethBufGeomSize = ( 4 * nNumTeeth + 1 );
     V2* buf = (V2*)malloc( sizeof( V2 ) * nTeethBufGeomSize );
-//    float fAngleIncrement = (float)M_PI/(float)nNumTeeth;
-//    float fAngle = 0.0f;
-//    M2 rot(true);
-//    nCrownBufSize = (size_t)( fRadius * 0.66f ) + 4;
-//    float toothRatio( 1.0f - 1.0f / ( nNumTeeth/4 + 5.0f ));
-//    V2 temp;
-//    for( int i = 0; i < ( 2 * nNumTeeth ); i++, fAngle += fAngleIncrement )
-//    {
-//        if( i % 2 )
-//        {
-//            rotm2( fAngle, &rot );
-//            temp.x = fRadius;
-//            mulv2xm2( temp, rot, buf + ( i * 2 ) );
-//            rotm2( fAngle + 0.02f, &rot );
-//            temp.x = fRadius * toothRatio;
-//            mulv2xm2( temp, rot, buf + ( i * 2 + 1) );
-//        }
-//        else
-//        {
-//            rotm2( fAngle - 0.02f, &rot );
-//            temp.x = fRadius * toothRatio;
-//            mulv2xm2( temp, rot, buf + ( i * 2 ) );
-//            rotm2( fAngle, &rot );
-//            temp.x = fRadius;
-//            mulv2xm2( temp, rot, buf + ( i * 2 + 1 ) );
-//        }
-//    }
-//
-//    rotm2( 0.0f, &rot );
-//    temp.x = fRadius * toothRatio;
-//    temp.y = 0.0f;
-//    mulv2xm2( temp, rot, buf + nTeethBufGeomSize - 1 );
-//
-//
-////    for( int i = 0; i < nCrown
-//
-    *nBufSize = nTeethBufGeomSize;
 
     return buf;
 }
@@ -166,31 +127,36 @@ void flushvb()
 
 void DrawV2BufTran( V2* buf, int n, M3* tran )
 {
+   if( n < 2 )
+      return;
+
    ib[ibIndex] = 0;
    
-    V3 temp, src;
+    V3 temp, src; src.z = 1.0f;
     for( int i = 0; i < n; i++ )
     {
-        src.x = buf[i].x; src.y = buf[i].y; src.z = 1.0f;
+        src.x = buf[i].x; src.y = buf[i].y;
         mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &scaleMatRes, &temp ), &m2dProj, &temp );
 
         vpp[vpIndex].x = (LONG)( temp.x );
         vpp[vpIndex].y = (LONG)( temp.y );
-
         ib[ibIndex]++;
-        vpIndex++;
 
-        if( vpIndex == NPOINTS || ibIndex == NPOINTS )
+        if( vpIndex == NPOINTS - 1 )
         {
-           flushvb( );
+           if( i == 0 && ibIndex > 0 )
+              ibIndex--;
+           else
+              i--;
+
+           flushvb();
         }
- 
+        else
+            vpIndex++; 
     }
 
-//    ib[ibIndex]++;
     ibIndex++;
 
-//    Polyline( hMemDC, vp, n );
     numLines += n;
 }
 
@@ -208,12 +174,12 @@ void Draw( float fDeltaTime)
    M3 rot(true);
    rotm3(fAngle, &rot);
 
-   int numX = 5, numY = 5;
+   int numX = 45, numY = 45;
    for( int i = 0; i < numX; i++ )
       for( int j = 0; j < numY; j++ )
       {
          M3 rotL;
-         rotm3(  (( 4.0f  -sqrtf( (i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) )) * fAngle ), &rotL );
+         rotm3(  (( 14.0f  - 2.0f * sqrtf( (i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) )) * fAngle ), &rotL );
          M3 gridM;
          V3 tran( 3.10f * ( (float)i - numX * 0.5f) , 3.10f * ( (float)j - numY * 0.5f) , 1.0f );
 
@@ -405,9 +371,11 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (wParam == 'P')
 			fTimeScale *= 0.2f;
+      if ( fTimeScale < 0.0001f ) fTimeScale = 0.0001f;
 
 		if (wParam == 'O')
 			fTimeScale *= 1.5f;
+      if( fTimeScale > 100.0f ) fTimeScale = 100.0f;
 
 		if (wParam == 'Q')
 			fSign = -fSign;
