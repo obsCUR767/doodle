@@ -39,7 +39,7 @@ HDC hMemDC;
 HDC hBackDC;
 
 
-const int NPOINTS(111);
+const int NPOINTS(100);
 POINT *vp, *vpp;
 DWORD *ib;
 
@@ -70,7 +70,7 @@ V3 cubeVerts[] = {
 
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
-float zoom( 1.0f );
+float zoom( 0.1f );
 float fSgn(0.1f);
 V2 screenOffs;
 M3 m2dProj(true);
@@ -125,13 +125,22 @@ void flushvb()
 }
 
 
+//POINTS vpp[vpIndex]
+//DWORD ib[ibIndex]
+
 void DrawV2BufTran( V2* buf, int n, M3* tran )
 {
    if( n < 2 )
       return;
 
+   if( n + vpIndex >= NPOINTS ) 
+      flushvb( );
+
+   if( n > NPOINTS )
+      return;
+
    ib[ibIndex] = 0;
-   
+
     V3 temp, src; src.z = 1.0f;
     for( int i = 0; i < n; i++ )
     {
@@ -142,22 +151,40 @@ void DrawV2BufTran( V2* buf, int n, M3* tran )
         vpp[vpIndex].y = (LONG)( temp.y );
         ib[ibIndex]++;
 
-        if( vpIndex == NPOINTS - 1 )
-        {
-           if( i == 0 && ibIndex > 0 )
-              ibIndex--;
-           else
-              i--;
-
-           flushvb();
-        }
-        else
-            vpIndex++; 
+        vpIndex++; 
     }
 
     ibIndex++;
 
     numLines += n;
+}
+
+void DrawV2BufTranIm( V2* buf, int n, M3* tran )
+{
+   if( n < 2 )
+      return;
+
+   if( n + vpIndex >= NPOINTS )
+      flushvb( );
+
+   if( n > NPOINTS )
+      return;
+
+
+   POINT *pb = vpp + vpIndex;
+
+   V3 temp, src; src.z = 1.0f;
+   for( int i = 0; i < n; i++ )
+   {
+      src.x = buf[i].x; src.y = buf[i].y;
+      mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &scaleMatRes, &temp ), &m2dProj, &temp );
+
+      pb[i].x = (LONG)( temp.x );
+      pb[i].y = (LONG)( temp.y );
+   }
+
+   numLines += n;
+   Polyline( hMemDC, pb, n );
 }
 
 
@@ -254,7 +281,6 @@ void main(void)
 	wndClass.lpfnWndProc = wndAppProc;
 	wndClass.lpszClassName = APPWNDCLASSNAME;
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	//  wndClass.hbrBackground =  (HBRUSH)(COLOR_BACKGROUND);//WHITE_BRUSH;
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
 	RegisterClass(&wndClass);
@@ -264,8 +290,6 @@ void main(void)
 	UpdateWindow(hwnd);
 
 	printf("ceak!\n");
-
-//    UpdatePoints(0.0f);
 
 	MSG msg;
 
