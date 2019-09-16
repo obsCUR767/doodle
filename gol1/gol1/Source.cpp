@@ -195,7 +195,7 @@ void Draw( float fDeltaTime)
    
    BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
-   SelectObject(hMemDC, GetStockObject(WHITE_PEN));
+   SelectObject(hMemDC, GetStockObject(DC_PEN));
 
    fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
    M3 rot(true);
@@ -206,7 +206,13 @@ void Draw( float fDeltaTime)
       for( int j = 0; j < numY; j++ )
       {
          M3 rotL;
-         rotm3(  (( 14.0f  - 2.0f * sqrtf( (i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) )) * fAngle ), &rotL );
+         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
+         SetDCPenColor( hMemDC, RGB( 
+            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
+            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f ))),
+            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f + 2.0f) ) ) ) );
+
+         rotm3(  ( 14.0f  - 2.0f * radiusFactor * fAngle ), &rotL );
          M3 gridM;
          V3 tran( 3.10f * ( (float)i - numX * 0.5f) , 3.10f * ( (float)j - numY * 0.5f) , 1.0f );
 
@@ -214,8 +220,8 @@ void Draw( float fDeltaTime)
          gridM.a21 = tran.y;
          mul3x3( &rotL, &gridM, &gridM );
          mul3x3( &gridM, &rot, &gridM );
-         DrawV2BufTran( wheel1, wheel1Size, &gridM );
-         DrawV2BufTran( sq, 5, &gridM );
+         DrawV2BufTranIm( wheel1, wheel1Size, &gridM );
+         DrawV2BufTranIm( sq, 5, &gridM );
       }
 
    flushvb();
@@ -318,8 +324,6 @@ void main(void)
 
 void Proj()
 {
-
-
     M3 scaleMatTran, scaleMatTranInv, scaleMatScale;
     float fTemp( float( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.1f );
     V3 scaleVec( fTemp * zoom, -fTemp * zoom, 1.0f );
@@ -327,8 +331,7 @@ void Proj()
 
 
     V3 zoomCenter( ( 2.0f * screenOffs.x - clRSize.x ) / clRSize.x , ( 2.0f * screenOffs.y - clRSize.y ) / clRSize.y, 1.0f );
-    printf( "scalevec %fx%f\n", scaleVec.x, scaleVec.y );
-
+    printf( "scalevec %fx%f, screenOffs %fx%f\n", scaleVec.x, scaleVec.y, screenOffs.x, screenOffs.y );
 
     translatem3( &zoomCenter, &scaleMatTran );
     invm3( &scaleMatTran, &scaleMatTranInv );
