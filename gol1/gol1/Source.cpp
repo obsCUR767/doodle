@@ -209,8 +209,8 @@ void Draw( float fDeltaTime)
          float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
          SetDCPenColor( hMemDC, RGB( 
             (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f ))),
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f + 2.0f) ) ) ) );
+            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
+            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
 
          rotm3(  ( 14.0f  - 2.0f * radiusFactor * fAngle ), &rotL );
          M3 gridM;
@@ -255,8 +255,6 @@ void Loop(HWND hwnd)
 }
 
 
-
-
 void Ding()
 {
    srand((int)time(0));
@@ -270,8 +268,8 @@ void Ding()
 void main(void)
 {
 	QueryPerformanceCounter(&first);
-    last = first;
-    curr = first;
+   last = first;
+   curr = first;
 	QueryPerformanceFrequency(&freq);
 
    ib = (DWORD*)malloc( sizeof( DWORD ) * NPOINTS );
@@ -327,18 +325,18 @@ void Proj()
     M3 scaleMatTran, scaleMatTranInv, scaleMatScale;
     float fTemp( float( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.1f );
     V3 scaleVec( fTemp * zoom, -fTemp * zoom, 1.0f );
-    V3 centerOffset( float( clRSize.x ) * 0.5f, float( clRSize.y ) * 0.5f, 0.0f );
+    V3 clCenterCoord( float( clRSize.x ) * 0.5f, float( clRSize.y ) * 0.5f, 0.0f );
 
 
     V3 zoomCenter( ( 2.0f * screenOffs.x - clRSize.x ) / clRSize.x , ( 2.0f * screenOffs.y - clRSize.y ) / clRSize.y, 1.0f );
-    printf( "scalevec %fx%f, screenOffs %fx%f\n", scaleVec.x, scaleVec.y, screenOffs.x, screenOffs.y );
+    printf( "scalevec %fx%f, zoomCenter %fx%f\n", scaleVec.x, scaleVec.y, zoomCenter.x, zoomCenter.y );
 
     translatem3( &zoomCenter, &scaleMatTran );
     invm3( &scaleMatTran, &scaleMatTranInv );
     scalem3( &scaleVec, &scaleMatScale );
     mul3x3( mul3x3( &scaleMatTranInv, &scaleMatScale, &scaleMatRes ), &scaleMatTran, &scaleMatRes );
 
-//    translatem3( &centerOffset, &m2dProj );
+//    translatem3( &clCenterCoord, &m2dProj );
 //    mul3x3( &m2dProj, &scaleMatRes, &m2dProj );
 
 }
