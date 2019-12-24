@@ -343,11 +343,20 @@ void Aquire(HWND hwnd, bool bInit = false )
     float hcx = clRSize.x * 0.5f; if( clRSize.x > clRSize.y ) hcx /= fAspectRatio;
     float hcy = clRSize.y * 0.5f; if( clRSize.x < clRSize.y ) hcy *=fAspectRatio;
 
-    screenProj.a00 = screenProj.a20 = hcx;
-    screenProj.a11 = -hcy; screenProj.a21 = hcy;
+    screenProj.a00 = hcx;
+    if( fAspectRatio > 1.0f ) 
+        hcx += (float)( clRSize.x - clRSize.y ) * 0.5f;
+    screenProj.a20 = hcx; 
+
+    screenProj.a11 = -hcy; 
+    if( fAspectRatio <= 1.0f ) 
+        hcy += (float)( clRSize.y - clRSize.x ) * 0.5f;
+    screenProj.a21 = hcy; 
+
     invm3( &screenProj, &screenProjInv );
 
 //	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
+
 
 //    Proj( );
 
