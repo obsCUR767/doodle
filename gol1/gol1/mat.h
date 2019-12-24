@@ -190,6 +190,21 @@ inline M3* translatem3( const V3* tran, M3* res )
     return res;
 }
 
+inline M3* translatem3( float x, float y, M3* res )
+{
+    res->a20 = x;
+    res->a21 = y;
+    return res;
+}
+
+inline M3* translatem3( float x, float y, float z, M3* res )
+{
+    res->a20 = x;
+    res->a21 = y;
+    res->a22 = z;
+    return res;
+}
+
 inline M2* scalem2( const V2* s, M2* res ) { res->a00 = s->x; res->a11 = s->y; return res; }
 inline M3* scalem3( const V3* s, M3* res ) { res->a00 = s->x; res->a11 = s->y; res->a22 = s->z; return res; }
 inline M4* scalem4( const V4* s, M4* res ) { res->a00 = s->x; res->a11 = s->y; res->a22 = s->z; res->a33 = s->w; return res; }

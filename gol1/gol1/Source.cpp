@@ -57,11 +57,11 @@ IndexedPrim2D iSq;
 
 
 V2 sq[5] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f } };
-const float TIP( 5.0f );
-const float VAL( 0.30f );
-V2 star[] =    { { TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
+const float TIP( 0.05f );
+const float VAL( 0.01f );
+V2 star[] =    { { 2.0f*TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
                   { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL}, 
-                  { TIP, 0.0F } };
+                  { 2.0f * TIP, 0.0F } };
 
 V3 cubeVerts[] = {
 	{ 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },
@@ -70,10 +70,11 @@ V3 cubeVerts[] = {
 
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
-float zoom( 0.1f );
-float fSgn(0.1f);
-V2 screenOffs;
-M3 m2dProj(true);
+float zoom( 1.0f );
+V3 screenOffs;
+M3 screenProj( true );
+M3 screenProjInv( true );
+M3 mWorld;
 M3 scaleMatRes;
 
 V2* sproket1;
@@ -128,37 +129,6 @@ void flushvb()
 //POINTS vpp[vpIndex]
 //DWORD ib[ibIndex]
 
-void DrawV2BufTran( V2* buf, int n, M3* tran )
-{
-   if( n < 2 )
-      return;
-
-   if( n + vpIndex >= NPOINTS ) 
-      flushvb( );
-
-   if( n > NPOINTS )
-      return;
-
-   ib[ibIndex] = 0;
-
-    V3 temp, src; src.z = 1.0f;
-    for( int i = 0; i < n; i++ )
-    {
-        src.x = buf[i].x; src.y = buf[i].y;
-        mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &scaleMatRes, &temp ), &m2dProj, &temp );
-
-        vpp[vpIndex].x = (LONG)( temp.x );
-        vpp[vpIndex].y = (LONG)( temp.y );
-        ib[ibIndex]++;
-
-        vpIndex++; 
-    }
-
-    ibIndex++;
-
-    numLines += n;
-}
-
 void DrawV2BufTranIm( V2* buf, int n, M3* tran )
 {
    if( n < 2 )
@@ -177,7 +147,8 @@ void DrawV2BufTranIm( V2* buf, int n, M3* tran )
    for( int i = 0; i < n; i++ )
    {
       src.x = buf[i].x; src.y = buf[i].y;
-      mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &scaleMatRes, &temp ), &m2dProj, &temp );
+//      mulv3xm3( mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &mWorld, &temp ), &scaleMatRes, &temp ), &screenProj, &temp );
+      mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &mWorld, &temp ), &screenProj, &temp );
 
       pb[i].x = (LONG)( temp.x );
       pb[i].y = (LONG)( temp.y );
@@ -196,33 +167,56 @@ void Draw( float fDeltaTime)
    BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
    SelectObject(hMemDC, GetStockObject(DC_PEN));
+//   mWorld.initM3();
 
    fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
    M3 rot(true);
    rotm3(fAngle, &rot);
 
-   int numX = 45, numY = 45;
-   for( int i = 0; i < numX; i++ )
-      for( int j = 0; j < numY; j++ )
-      {
-         M3 rotL;
-         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
-         SetDCPenColor( hMemDC, RGB( 
-            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
+//   int numX = 5, numY = 5;
+//   float sizeX = 0.1f, sizeY= 0.1f;
+//   for( int i = 0; i < numX; i++ )
+//      for( int j = 0; j < numY; j++ )
+//      {
+//         M3 rotL;
+//         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
+//         SetDCPenColor( hMemDC, RGB( 
+//            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
+//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
+//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
+//
+//         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
+////         rotm3(   fAngle, &rotL );
+//         M3 gridM;
+//         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
+//
+//         gridM.a20 = tran.x;
+//         gridM.a21 = tran.y;
+//         mul3x3( &rotL, &gridM, &gridM );
+//         mul3x3( &gridM, &rot, &gridM );
+//         DrawV2BufTranIm( sq, 5, &gridM );
+//      }
 
-         rotm3(  ( 14.0f  - 2.0f * radiusFactor * fAngle ), &rotL );
-         M3 gridM;
-         V3 tran( 3.10f * ( (float)i - numX * 0.5f) , 3.10f * ( (float)j - numY * 0.5f) , 1.0f );
 
-         gridM.a20 = tran.x;
-         gridM.a21 = tran.y;
-         mul3x3( &rotL, &gridM, &gridM );
-         mul3x3( &gridM, &rot, &gridM );
-         DrawV2BufTranIm( wheel1, wheel1Size, &gridM );
-         DrawV2BufTranIm( sq, 5, &gridM );
-      }
+   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ));
+   rotm3( 2.0f * fAngle, &rot );
+   translatem3( 1.0f, 1.0f, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
+
+   SetDCPenColor( hMemDC, RGB( 255, 0, 0 ) );
+   rotm3( 2.0f * fAngle + M_PI_2, &rot );
+   translatem3( 1.0f, -1.0f, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
+
+   SetDCPenColor( hMemDC, RGB( 0, 255, 0 ) );
+   rotm3( 2.0f * fAngle + M_PI, &rot );
+   translatem3( -1.0f, -1.0f, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
+
+   SetDCPenColor( hMemDC, RGB( 0, 0, 255 ) );
+   rotm3( 2.0f * fAngle - M_PI_2, &rot );
+   translatem3( -1.0f, 1.0f, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
 
    flushvb();
 
@@ -259,14 +253,15 @@ void Ding()
 {
    srand((int)time(0));
 
-    sproket1 = GenSproket( 25, 1.0f, &sproket1Size );
-    wheel1= GenWheel( 25, 1.0f, &wheel1Size );
+    sproket1 = GenSproket( 25, 0.1f, &sproket1Size );
+    wheel1= GenWheel( 25, 0.1f, &wheel1Size );
 
 }
 
 
 void main(void)
 {
+	MSG msg;
 	QueryPerformanceCounter(&first);
    last = first;
    curr = first;
@@ -295,7 +290,6 @@ void main(void)
 
 	printf("ceak!\n");
 
-	MSG msg;
 
 	do
 	{
@@ -322,23 +316,21 @@ void main(void)
 
 void Proj()
 {
-    M3 scaleMatTran, scaleMatTranInv, scaleMatScale;
-    float fTemp( float( clRSize.x > clRSize.y ? clRSize.y : clRSize.x ) * 0.1f );
-    V3 scaleVec( fTemp * zoom, -fTemp * zoom, 1.0f );
-    V3 clCenterCoord( float( clRSize.x ) * 0.5f, float( clRSize.y ) * 0.5f, 0.0f );
+
+    V3 zoomCenter;
+    mulv3xm3( &screenOffs, &screenProjInv, &zoomCenter );
+    //V3 zoomCenter( 2.0f * screenOffs.x/clRSize.x - 1.0f, 2.0f * screenOffs.y / clRSize.y - 1.0f, 1.0f );
 
 
-    V3 zoomCenter( ( 2.0f * screenOffs.x - clRSize.x ) / clRSize.x , ( 2.0f * screenOffs.y - clRSize.y ) / clRSize.y, 1.0f );
-    printf( "scalevec %fx%f, zoomCenter %fx%f\n", scaleVec.x, scaleVec.y, zoomCenter.x, zoomCenter.y );
+    printf( "zoom %f, zoomCenter %fx%f\n", zoom, zoomCenter.x, zoomCenter.y );
+    M3 zoomMat;
+    zoomMat.initM3();
 
-    translatem3( &zoomCenter, &scaleMatTran );
-    invm3( &scaleMatTran, &scaleMatTranInv );
-    scalem3( &scaleVec, &scaleMatScale );
-    mul3x3( mul3x3( &scaleMatTranInv, &scaleMatScale, &scaleMatRes ), &scaleMatTran, &scaleMatRes );
+    zoomMat.a00 = zoomMat.a11 = zoom;
+    zoomMat.a20 = zoomCenter.x * ( 1.0f - zoom );
+    zoomMat.a21 = zoomCenter.y * ( 1.0f - zoom );
 
-//    translatem3( &clCenterCoord, &m2dProj );
-//    mul3x3( &m2dProj, &scaleMatRes, &m2dProj );
-
+    mul3x3( &mWorld, &zoomMat, &mWorld );
 }
 
 void Aquire(HWND hwnd, bool bInit = false )
@@ -346,10 +338,18 @@ void Aquire(HWND hwnd, bool bInit = false )
 	GetClientRect(hwnd, &clRect);
 	clRSize.x = clRect.right - clRect.left;
 	clRSize.y = clRect.bottom - clRect.top;
+    float fAspectRatio = clRSize.x / (float)clRSize.y;
 
-	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
+    float hcx = clRSize.x * 0.5f; if( clRSize.x > clRSize.y ) hcx /= fAspectRatio;
+    float hcy = clRSize.y * 0.5f; if( clRSize.x < clRSize.y ) hcy *=fAspectRatio;
 
-    Proj( );
+    screenProj.a00 = screenProj.a20 = hcx;
+    screenProj.a11 = -hcy; screenProj.a21 = hcy;
+    invm3( &screenProj, &screenProjInv );
+
+//	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
+
+//    Proj( );
 
     ReleaseDC( hwnd, hdc );
     ReleaseDC( hwnd, hMemDC );
@@ -376,8 +376,6 @@ void Aquire(HWND hwnd, bool bInit = false )
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-//    printf("%x\n", msg );
-
     screenOffs.x = 0.0f;
     screenOffs.y = 0.0f;
 
@@ -404,13 +402,20 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		if (wParam == 'Q')
 			fSign = -fSign;
-	}
+
+      if( wParam == 'Z' )
+      {
+             mWorld.initM3();
+             Aquire( hwnd );
+
+      }
+    }
 
     if( msg == WM_MOUSEWHEEL )
     {
         DWORD fwKeys = GET_KEYSTATE_WPARAM( wParam );
         DWORD zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
-        float fMultiplier = ((fwKeys & MK_SHIFT ) == MK_SHIFT ) ? 1.03f : 1.1f;
+        float fMultiplier = ((fwKeys & MK_SHIFT ) == MK_SHIFT ) ? 1.1f : 1.01f;
 
 		POINT p; 
 		p.x = GET_X_LPARAM(lParam);
@@ -421,17 +426,17 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       screenOffs.x = (float)p.x - clRect.left;
       screenOffs.y = (float)p.y - clRect.top;
 
-//      printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
+      printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
 
 		if (!(wParam & (1 << 31)))
 		{
-			fSgn = 10.0f * fMultiplier;
-			zoom *= fMultiplier;
+            zoom = fMultiplier;
+//            zoom *= fMultiplier;
 		}
 		else
 		{
-			fSgn = -10.0f * fMultiplier;
-			zoom /= fMultiplier;
+   			zoom = 1.0f - ( fMultiplier - 1.0f );
+//            zoom /= fMultiplier;
 		}
 
       Proj();
@@ -459,7 +464,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             leftButtonDragCoord.x = GET_X_LPARAM( lParam );
             leftButtonDragCoord.y = GET_Y_LPARAM( lParam );
             V3 moveOffset( (float)leftButtonDragCoord.x - leftButtonDragStart.x, (float)leftButtonDragCoord.y - leftButtonDragStart.y, 0.0f );
-            v3Add( &m2dProj.Z, &moveOffset, &m2dProj.Z ) ;
+            v3Add( &screenProj.Z, &moveOffset, &screenProj.Z ) ;
             leftButtonDragStart = leftButtonDragCoord;
 		}
 	}
