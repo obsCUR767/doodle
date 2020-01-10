@@ -83,6 +83,7 @@ size_t sproket1Size;
 V2* wheel1;
 size_t wheel1Size;
 
+V3 mousePosV3;
 
 size_t numLines;
 
@@ -147,7 +148,6 @@ void DrawV2BufTranIm( V2* buf, int n, M3* tran )
    for( int i = 0; i < n; i++ )
    {
       src.x = buf[i].x; src.y = buf[i].y;
-//      mulv3xm3( mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &mWorld, &temp ), &scaleMatRes, &temp ), &screenProj, &temp );
       mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &mWorld, &temp ), &screenProj, &temp );
 
       pb[i].x = (LONG)( temp.x );
@@ -216,6 +216,22 @@ void Draw( float fDeltaTime)
    SetDCPenColor( hMemDC, RGB( 0, 0, 255 ) );
    rotm3( 2.0f * fAngle - M_PI_2, &rot );
    translatem3( -1.0f, 1.0f, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
+
+
+   SetDCPenColor( hMemDC, RGB( 255, 0, 255 ) );
+   rotm3( 2.0f * fAngle - M_PI_2, &rot );
+   translatem3( 0.0f, 0.0f, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
+
+   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
+   rotm3( 2.0f * fAngle - M_PI_2, &rot );
+   translatem3( mousePosV3.x, mousePosV3.y, &rot );
+   DrawV2BufTranIm( star, 9, &rot );
+
+   SetDCPenColor( hMemDC, RGB( 0, 255, 255 ) );
+   rotm3( 13.0f * fAngle - M_PI_2, &rot );
+   translatem3( mousePosV3.x, mousePosV3.y, &rot );
    DrawV2BufTranIm( star, 9, &rot );
 
    flushvb();
@@ -322,7 +338,7 @@ void Proj()
     //V3 zoomCenter( 2.0f * screenOffs.x/clRSize.x - 1.0f, 2.0f * screenOffs.y / clRSize.y - 1.0f, 1.0f );
 
 
-    printf( "zoom %f, zoomCenter %fx%f\n", zoom, zoomCenter.x, zoomCenter.y );
+    printf( "zoom %f, screenOffs %f * %f, zoomCenter %f * %f\n", zoom, screenOffs.x, screenOffs.y, zoomCenter.x, zoomCenter.y );
     M3 zoomMat;
     zoomMat.initM3();
 
@@ -330,7 +346,8 @@ void Proj()
     zoomMat.a20 = zoomCenter.x * ( 1.0f - zoom );
     zoomMat.a21 = zoomCenter.y * ( 1.0f - zoom );
 
-    mul3x3( &mWorld, &zoomMat, &mWorld );
+//    mul3x3( &mWorld, &zoomMat, &mWorld );
+    mul3x3( &zoomMat, &mWorld, &mWorld );
 }
 
 void Aquire(HWND hwnd, bool bInit = false )
@@ -435,7 +452,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       screenOffs.x = (float)p.x - clRect.left;
       screenOffs.y = (float)p.y - clRect.top;
 
-      printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
+//      printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
 
 		if (!(wParam & (1 << 31)))
 		{
@@ -466,6 +483,14 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 	if (msg == WM_MOUSEMOVE)
 	{
+        V3 mousePos;
+        mousePos.x = (float)GET_X_LPARAM( lParam );
+        mousePos.y = (float)GET_Y_LPARAM( lParam );
+
+        mulv3xm3( &mousePos, &screenProjInv, &mousePosV3 );
+
+        printf( "________ wparam %f * %f, screen %f * %f\n", mousePos.x, mousePos.y, mousePosV3.x, mousePosV3.y );
+
 		DWORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
 		if ((fwKeys & MK_LBUTTON) == MK_LBUTTON)
 		{
