@@ -84,7 +84,7 @@ size_t sproket1Size;
 V2* wheel1;
 size_t wheel1Size;
 
-V3 mousePosV3;
+V3 mousePosV3, mousePosV3Prev;
 
 size_t numLines;
 
@@ -174,8 +174,8 @@ void Draw( float fDeltaTime)
    M3 rot(true);
    rotm3(fAngle, &rot);
 
-//   int numX = 5, numY = 5;
-//   float sizeX = 0.1f, sizeY= 0.1f;
+//   int numX = 50, numY = 50;
+//   float sizeX = 0.5f, sizeY= 0.5f;
 //   for( int i = 0; i < numX; i++ )
 //      for( int j = 0; j < numY; j++ )
 //      {
@@ -197,7 +197,7 @@ void Draw( float fDeltaTime)
 //         mul3x3( &gridM, &rot, &gridM );
 //         DrawV2BufTranIm( sq, 5, &gridM );
 //      }
-
+//
 
    SetDCPenColor( hMemDC, RGB( 255, 255, 255 ));
    rotm3( 2.0f * fAngle, &rot );
@@ -234,6 +234,17 @@ void Draw( float fDeltaTime)
    rotm3( 13.0f * fAngle - M_PI_2, &rot );
    translatem3( mousePosV3.x, mousePosV3.y, &rot );
    DrawV2BufTranIm( star, 9, &rot );
+
+   SetDCPenColor(hMemDC, RGB(255, 0, 255));
+   rotm3(2.0f * fAngle - M_PI_2, &rot);
+   translatem3(mousePosV3Prev.x, mousePosV3Prev.y, &rot);
+   DrawV2BufTranIm(star, 9, &rot);
+
+   SetDCPenColor(hMemDC, RGB(255, 128, 0));
+   rotm3(13.0f * fAngle - M_PI_2, &rot);
+   translatem3(mousePosV3Prev.x, mousePosV3Prev.y, &rot);
+   DrawV2BufTranIm(star, 9, &rot);
+
 
    flushvb();
 
@@ -454,17 +465,14 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       screenOffs.x = (float)p.x - clRect.left;
       screenOffs.y = (float)p.y - clRect.top;
 
-//      printf( "high wparam: %d, screenOffs.x: %f, screenOffs.y: %f\n", wParam >> 16, screenOffs.x, screenOffs.y );
 
 		if (!(wParam & (1 << 31)))
 		{
             zoom = fMultiplier;
-//            zoom *= fMultiplier;
 		}
 		else
 		{
    			zoom = 1.0f - ( fMultiplier - 1.0f );
-//            zoom /= fMultiplier;
 		}
 
       Proj();
@@ -476,57 +484,46 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		printf("WM_SIZE: %d\t%d\t%d\n", wParam, lParam >> 16, lParam & ((1 << 16) - 1));
 	}
 
-    static POINT leftButtonDragStart{0,0};
-    static V3 leftButtonDragStartWorld{ 0.0f, 0.0f, 0.0f };
 
-    POINT leftButtonDragCoord;
-    V3 leftButtonDragCoordWorld;
+    static POINT leftButtonDragStart{0,0};
 
     if( msg == WM_LBUTTONDOWN )
     {
         leftButtonDragStart.x = GET_X_LPARAM( lParam );
         leftButtonDragStart.y = GET_Y_LPARAM( lParam );
-
-        leftButtonDragStartWorld.x = (float)leftButtonDragStart.x;
-        leftButtonDragStartWorld.y = (float)leftButtonDragStart.y;
-        leftButtonDragStartWorld.z = 1.0f;
-        mulv3xm3(mulv3xm3(&leftButtonDragStartWorld, &screenProjInv, &leftButtonDragStartWorld), &mWorldInv, &leftButtonDragStartWorld);
+        printf("click!\n");
     }
-	if (msg == WM_MOUSEMOVE)
+
+    if (msg == WM_MOUSEMOVE)
 	{
-        V3 mousePos;
-        mousePos.x = (float)GET_X_LPARAM( lParam );
-        mousePos.y = (float)GET_Y_LPARAM(lParam);
-        mousePos.z = 1.0f;
-
-
-        mulv3xm3( mulv3xm3(&mousePos, &screenProjInv, &mousePosV3), &mWorldInv, &mousePosV3 );
+        POINT leftButtonDragCoord;
+        leftButtonDragCoord.x = GET_X_LPARAM( lParam );
+        leftButtonDragCoord.y = GET_Y_LPARAM(lParam);
+        V3 leftButtonDragCoordWorld{ 0.0f, 0.0f, 1.0f };
+        leftButtonDragCoordWorld.x = (float)leftButtonDragCoord.x;
+        leftButtonDragCoordWorld.y = (float)leftButtonDragCoord.y;
+        mulv3xm3(mulv3xm3(&leftButtonDragCoordWorld, &screenProjInv, &leftButtonDragCoordWorld), &mWorldInv, &leftButtonDragCoordWorld);
 
 		DWORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
-		if ((fwKeys & MK_LBUTTON) == MK_LBUTTON)
+        if ((fwKeys & MK_LBUTTON) == MK_LBUTTON)
 		{
-            leftButtonDragCoord.x = GET_X_LPARAM( lParam );
-            leftButtonDragCoord.y = GET_Y_LPARAM(lParam);
+            V3 leftButtonDragStartWorld{ 0.0f, 0.0f, 1.0f };
+            leftButtonDragStartWorld.x = (float)leftButtonDragStart.x;
+            leftButtonDragStartWorld.y = (float)leftButtonDragStart.y;
+            mulv3xm3(mulv3xm3(&leftButtonDragStartWorld, &screenProjInv, &leftButtonDragStartWorld), &mWorldInv, &leftButtonDragStartWorld);
 
-            leftButtonDragCoordWorld.x = (float)leftButtonDragCoord.x;
-            leftButtonDragCoordWorld.y = (float)leftButtonDragCoord.y;
-            leftButtonDragCoordWorld.z = 1.0f;
-            mulv3xm3(mulv3xm3(&leftButtonDragCoordWorld, &screenProjInv, &leftButtonDragCoordWorld), &mWorldInv, &leftButtonDragCoordWorld);
+            V3 delta( leftButtonDragCoordWorld.x - leftButtonDragStartWorld.x, leftButtonDragCoordWorld.y - leftButtonDragStartWorld.y, 0.0f );
 
-            printf( "dragCurr %f * %f, dragprev %f * %f\n", leftButtonDragCoordWorld.x, leftButtonDragCoordWorld.y, leftButtonDragStartWorld.x, leftButtonDragStartWorld.y );
-            V3 moveOffset( leftButtonDragCoordWorld.x - leftButtonDragStartWorld.x, leftButtonDragCoordWorld.y - leftButtonDragStartWorld.y, 0.0f );
-            mulv3xm3(mulv3xm3(&mousePos, &screenProjInv, &mousePosV3), &mWorldInv, &mousePosV3);
-
-            v3Add( &mWorld.Z, &moveOffset, &mWorld.Z );
+            M3 tran;
+            v3Add(&tran.Z, &delta, &tran.Z);
+            mul3x3(&tran, &mWorld, &mWorld);
             invm3(&mWorld, &mWorldInv);
 
             leftButtonDragStart = leftButtonDragCoord;
-
-            leftButtonDragStartWorld.x = (float)leftButtonDragStart.x;
-            leftButtonDragStartWorld.y = (float)leftButtonDragStart.y;
-            leftButtonDragStartWorld.z = 1.0f;
-            mulv3xm3(mulv3xm3(&leftButtonDragStartWorld, &screenProjInv, &leftButtonDragStartWorld), &mWorldInv, &leftButtonDragStartWorld);
         }
+        mousePosV3Prev = mousePosV3;
+        mousePosV3 = leftButtonDragCoordWorld;
+        return 0;
 	}
 
     if( msg == WM_MOVE )
