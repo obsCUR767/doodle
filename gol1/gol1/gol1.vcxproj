@@ -213,6 +213,7 @@
     <ClCompile Include="Source.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</CompileAs>
     </ClCompile>
+    <ClCompile Include="ss.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bench.h" />

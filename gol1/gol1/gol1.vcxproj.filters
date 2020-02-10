@@ -21,6 +21,9 @@
     <ClCompile Include="bench.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zmath.h">

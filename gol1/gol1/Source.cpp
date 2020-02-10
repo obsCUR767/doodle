@@ -1,5 +1,5 @@
 #define _WIN32_LEAN_AND_MEAN
-//#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #define _USE_MATH_DEFINES
@@ -39,7 +39,7 @@ HDC hMemDC;
 HDC hBackDC;
 
 
-const int NPOINTS(100);
+const int NPOINTS(10000);
 POINT *vp, *vpp;
 DWORD *ib;
 
@@ -47,6 +47,14 @@ size_t vpIndex( 0 );
 size_t ibIndex(0);
 
 
+extern V2 ss[];
+extern size_t ssSize;
+
+extern V2 ss2[];
+extern size_t ss2Size;
+
+extern V2 ss3[];
+extern size_t ss3Size;
 
 V2 vbuf[ ] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, { -1.0f, -1.0f }, { 1.0f, -1.0f } };
 V3 v3buf[] = { { 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } };
@@ -54,6 +62,8 @@ size_t ibuf[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
 
 
 IndexedPrim2D iSq;
+
+
 
 
 V2 sq[5] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f } };
@@ -84,15 +94,98 @@ size_t sproket1Size;
 V2* wheel1;
 size_t wheel1Size;
 
-V3 mousePosV3, mousePosV3Prev;
+V3 mousePosV3;
 
 size_t numLines;
+
+struct County
+{
+    V2* vert;
+    size_t vertSize;
+    char* name;
+    V2 mid;
+};
+
+struct Counties
+{
+    County* vCounties;
+    size_t ss;
+};
+
+Counties* ccc = 0;
+Counties* LoadCounties(char* path)
+{
+    Counties* cnties = (Counties*)malloc(sizeof(Counties));
+    size_t CBUFSIZE = 128 * 1024;
+    FILE* f;
+    fopen_s(&f, path, "r");
+    char* cbuf = (char*)malloc(CBUFSIZE);
+    char* wbuf = (char*)malloc(CBUFSIZE);
+    int cont = 0;
+    int countyCount = 0;
+    int countyIndex = 0;
+    while (!(feof(f)))
+    {
+        fgets(cbuf, CBUFSIZE, f);
+        countyCount++;
+    };
+    countyCount--;
+    County* vCounties = (County*)calloc(sizeof(County), countyCount);
+    cnties->vCounties = vCounties;
+    cnties->ss = countyCount;
+    fseek(f, 0, SEEK_SET);
+
+    while (!(feof(f)))
+    {
+        fgets(cbuf, CBUFSIZE, f);
+
+        cont++;
+        char* coordBegin = strrchr(cbuf, '('); if (!coordBegin) continue; coordBegin++;
+        char* coordEnd = strchr(cbuf, ')'); if (!coordEnd) continue;
+        strncpy(wbuf, coordBegin, coordEnd - coordBegin + 1);
+        wbuf[coordEnd - coordBegin + 1] = 0;
+        int coordCount = 0;
+        int coordCount1 = 0;
+
+        for (char* c = wbuf; *c != 0; c++)
+            if (*c == ',') coordCount++;
+        coordCount++;
+        
+        vCounties[countyIndex].vert = (V2*)calloc(sizeof(V2), coordCount);
+        vCounties[countyIndex].vertSize = coordCount;
+
+        char* pch = strtok(wbuf, ",");
+        size_t coordIndex = 0;
+        while (pch)
+        {
+            if (pch)
+            {
+                sscanf(pch, "%f %f", &vCounties[countyIndex].vert[coordIndex].x, &vCounties[countyIndex].vert[coordIndex].y);
+                coordCount1++;
+                coordIndex++;
+            }
+            pch = strtok(NULL, ",");
+        }
+        if (coordCount1 != coordCount)
+            printf("parse error on %d: preallocated %d, parsed %d\n", cont, coordCount, coordCount1);
+        coordCount = 0;
+        coordCount1 = 0;
+        countyIndex++;
+    };
+    cont--;
+    free(wbuf); wbuf = NULL;
+    free(cbuf); cbuf = NULL;
+
+    return cnties;
+}
 
 V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
 {
     size_t nTeethBufGeomSize/*, nCrownBufSize*/;
     nTeethBufGeomSize = ( 4 * nNumTeeth + 1 );
     V2* buf = (V2*)malloc( sizeof( V2 ) * nTeethBufGeomSize );
+
+
 
     return buf;
 }
@@ -199,6 +292,7 @@ void Draw( float fDeltaTime)
 //      }
 //
 
+
    SetDCPenColor( hMemDC, RGB( 255, 255, 255 ));
    rotm3( 2.0f * fAngle, &rot );
    translatem3( 1.0f, 1.0f, &rot );
@@ -220,31 +314,27 @@ void Draw( float fDeltaTime)
    DrawV2BufTranIm( star, 9, &rot );
 
 
-   SetDCPenColor( hMemDC, RGB( 255, 0, 255 ) );
-   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-   translatem3( 0.0f, 0.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
-
+   M3 mm;
    SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
    rotm3( 2.0f * fAngle - M_PI_2, &rot );
-   translatem3( mousePosV3.x, mousePosV3.y, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
+   translatem3( 0.0f, 0.0f, &rot );
+//   DrawV2BufTranIm(star, 9, &rot);
+   DrawV2BufTranIm(ss, ssSize, &mm);
+   DrawV2BufTranIm(ss2, ss2Size, &mm);
+   DrawV2BufTranIm( ss3, ss3Size, &mm);
+   if( ccc )
+       for (int i = 0; i < ccc->ss; i++)
+           DrawV2BufTranIm(ccc->vCounties[i].vert, ccc->vCounties[i].vertSize, &mm);
 
-   SetDCPenColor( hMemDC, RGB( 0, 255, 255 ) );
-   rotm3( 13.0f * fAngle - M_PI_2, &rot );
-   translatem3( mousePosV3.x, mousePosV3.y, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
-
-   SetDCPenColor(hMemDC, RGB(255, 0, 255));
-   rotm3(2.0f * fAngle - M_PI_2, &rot);
-   translatem3(mousePosV3Prev.x, mousePosV3Prev.y, &rot);
-   DrawV2BufTranIm(star, 9, &rot);
-
-   SetDCPenColor(hMemDC, RGB(255, 128, 0));
-   rotm3(13.0f * fAngle - M_PI_2, &rot);
-   translatem3(mousePosV3Prev.x, mousePosV3Prev.y, &rot);
-   DrawV2BufTranIm(star, 9, &rot);
-
+//   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
+//   rotm3( 2.0f * fAngle - M_PI_2, &rot );
+//   translatem3( mousePosV3.x, mousePosV3.y, &rot );
+//   DrawV2BufTranIm( wheel1, wheel1Size, &rot );
+//
+//   SetDCPenColor( hMemDC, RGB( 0, 255, 255 ) );
+//   rotm3( 13.0f * fAngle - M_PI_2, &rot );
+//   translatem3( mousePosV3.x, mousePosV3.y, &rot );
+//   DrawV2BufTranIm( sproket1, sproket1Size, &rot );
 
    flushvb();
 
@@ -281,7 +371,7 @@ void Ding()
 {
    srand((int)time(0));
 
-    sproket1 = GenSproket( 25, 0.1f, &sproket1Size );
+    sproket1 = GenSproket( 25, 1.1f, &sproket1Size );
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
 
 }
@@ -298,9 +388,9 @@ void main(void)
    ib = (DWORD*)malloc( sizeof( DWORD ) * NPOINTS );
    vpp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
    vp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
-   //vBuf = (V3*)malloc( sizeof( V3 ) * NPOINTS );
 
     Ding();
+    ccc = LoadCounties("..\\gol1\\n.csv");
 
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
@@ -335,7 +425,6 @@ void main(void)
    if( sproket1 ) { free( sproket1 ); sproket1 = NULL; };
    if( wheel1 ) { free( wheel1 ); wheel1 = NULL; };
 
-   //if( vBuf ) { free( vBuf ); vBuf = NULL; }
    free( vp );
    free( vpp );
    free( ib );
@@ -355,7 +444,6 @@ void Proj()
     zoomMat.a20 = zoomCenter.x * ( 1.0f - zoom );
     zoomMat.a21 = zoomCenter.y * ( 1.0f - zoom );
 
-//    mul3x3(&mWorld, &zoomMat, &mWorld);
     mul3x3( &zoomMat, &mWorld, &mWorld );
     invm3(&mWorld, &mWorldInv);
 }
@@ -382,7 +470,7 @@ void Aquire(HWND hwnd, bool bInit = false )
 
     invm3( &screenProj, &screenProjInv );
 
-//	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
+	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
 
 
 //    Proj( );
@@ -521,7 +609,6 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             leftButtonDragStart = leftButtonDragCoord;
         }
-        mousePosV3Prev = mousePosV3;
         mousePosV3 = leftButtonDragCoordWorld;
         return 0;
 	}
@@ -540,4 +627,6 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
+
+
 
