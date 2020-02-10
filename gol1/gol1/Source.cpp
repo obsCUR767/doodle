@@ -161,6 +161,9 @@ Counties* LoadCounties(char* path)
             if (pch)
             {
                 sscanf(pch, "%f %f", &vCounties[countyIndex].vert[coordIndex].x, &vCounties[countyIndex].vert[coordIndex].y);
+                vCounties[countyIndex].vert[coordIndex].x += 87.0f;
+                vCounties[countyIndex].vert[coordIndex].y -= 41.0f;
+
                 coordCount1++;
                 coordIndex++;
             }
@@ -390,7 +393,12 @@ void main(void)
    vp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
 
     Ding();
+#ifdef _DEBUG
     ccc = LoadCounties("..\\gol1\\n.csv");
+#else
+    ccc = LoadCounties("n.csv");
+#endif
+
 
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
