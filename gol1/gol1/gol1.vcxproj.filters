@@ -21,7 +21,7 @@
     <ClCompile Include="bench.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ss.cpp">
+    <ClCompile Include="render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bench.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

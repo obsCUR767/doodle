@@ -1,6 +1,7 @@
 #pragma once
 #include "vec.h"
-//#include "malloc.h"
+#include "memory.h"
+#include <stdio.h>
 
 const float IDEN2[ ] = {    1.0f, 0.0f,
                             0.0f, 1.0f };

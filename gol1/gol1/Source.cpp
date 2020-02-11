@@ -15,6 +15,7 @@
 #include "prim.h"
 
 #include "bench.h"
+#include "render.h"
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
@@ -35,16 +36,10 @@ RECT clRect;
 POINT clRSize;
 
 HDC hdc;
-HDC hMemDC;
 HDC hBackDC;
 
 
-const int NPOINTS(10000);
-POINT *vp, *vpp;
-DWORD *ib;
 
-size_t vpIndex( 0 );
-size_t ibIndex(0);
 
 
 extern V2 ss[];
@@ -80,12 +75,6 @@ V3 cubeVerts[] = {
 
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
-float zoom( 1.0f );
-V3 screenOffs;
-M3 screenProj( true );
-M3 screenProjInv( true );
-M3 mWorld;
-M3 mWorldInv( true );
 M3 scaleMatRes;
 
 V2* sproket1;
@@ -96,102 +85,7 @@ size_t wheel1Size;
 
 V3 mousePosV3;
 
-size_t numLines;
 
-struct County
-{
-    V2* vert;
-    size_t vertSize;
-    char* name;
-    V2 mid;
-};
-
-struct Counties
-{
-    County* vCounties;
-    size_t ss;
-};
-
-Counties* ccc = 0;
-Counties* LoadCounties(char* path)
-{
-    Counties* cnties = (Counties*)malloc(sizeof(Counties));
-    size_t CBUFSIZE = 128 * 1024;
-    FILE* f;
-    fopen_s(&f, path, "r");
-    char* cbuf = (char*)malloc(CBUFSIZE);
-    char* wbuf = (char*)malloc(CBUFSIZE);
-    int cont = 0;
-    int countyCount = 0;
-    int countyIndex = 0;
-    while (!(feof(f)))
-    {
-        fgets(cbuf, CBUFSIZE, f);
-        countyCount++;
-    };
-    countyCount--;
-    County* vCounties = (County*)calloc(sizeof(County), countyCount);
-    cnties->vCounties = vCounties;
-    cnties->ss = countyCount;
-    fseek(f, 0, SEEK_SET);
-
-    while (!(feof(f)))
-    {
-        fgets(cbuf, CBUFSIZE, f);
-
-        cont++;
-        char* coordBegin = strrchr(cbuf, '('); if (!coordBegin) continue; coordBegin++;
-        char* coordEnd = strchr(cbuf, ')'); if (!coordEnd) continue;
-        strncpy(wbuf, coordBegin, coordEnd - coordBegin + 1);
-        wbuf[coordEnd - coordBegin + 1] = 0;
-        int coordCount = 0;
-        int coordCount1 = 0;
-
-        for (char* c = wbuf; *c != 0; c++)
-            if (*c == ',') coordCount++;
-        coordCount++;
-        
-        vCounties[countyIndex].vert = (V2*)calloc(sizeof(V2), coordCount);
-        vCounties[countyIndex].vertSize = coordCount;
-
-        char* pch = strtok(wbuf, ",");
-        size_t coordIndex = 0;
-        while (pch)
-        {
-            if (pch)
-            {
-                sscanf(pch, "%f %f", &vCounties[countyIndex].vert[coordIndex].x, &vCounties[countyIndex].vert[coordIndex].y);
-                vCounties[countyIndex].vert[coordIndex].x += 87.0f;
-                vCounties[countyIndex].vert[coordIndex].y -= 41.0f;
-
-                coordCount1++;
-                coordIndex++;
-            }
-            pch = strtok(NULL, ",");
-        }
-        if (coordCount1 != coordCount)
-            printf("parse error on %d: preallocated %d, parsed %d\n", cont, coordCount, coordCount1);
-        coordCount = 0;
-        coordCount1 = 0;
-        countyIndex++;
-    };
-    cont--;
-    free(wbuf); wbuf = NULL;
-    free(cbuf); cbuf = NULL;
-
-    return cnties;
-}
-
-V2* GenSproket( int nNumTeeth, float fRadius, size_t* nBufSize )
-{
-    size_t nTeethBufGeomSize/*, nCrownBufSize*/;
-    nTeethBufGeomSize = ( 4 * nNumTeeth + 1 );
-    V2* buf = (V2*)malloc( sizeof( V2 ) * nTeethBufGeomSize );
-
-
-
-    return buf;
-}
 
 V2* GenWheel( int _tess, float _fRadius, size_t* nBufSize )
 {
@@ -215,85 +109,41 @@ V2* GenWheel( int _tess, float _fRadius, size_t* nBufSize )
 }
 
 
-void flushvb()
-{
-   PolyPolyline( hMemDC, vpp, ib, ibIndex );
-   vpIndex = 0;
-   ibIndex = 0;
-   ib[ibIndex] = 0;
-}
-
-
-//POINTS vpp[vpIndex]
-//DWORD ib[ibIndex]
-
-void DrawV2BufTranIm( V2* buf, int n, M3* tran )
-{
-   if( n < 2 )
-      return;
-
-   if( n + vpIndex >= NPOINTS )
-      flushvb( );
-
-   if( n > NPOINTS )
-      return;
-
-
-   POINT *pb = vpp + vpIndex;
-
-   V3 temp, src; src.z = 1.0f;
-   for( int i = 0; i < n; i++ )
-   {
-      src.x = buf[i].x; src.y = buf[i].y;
-      mulv3xm3( mulv3xm3( mulv3xm3( &src, tran, &temp ), &mWorld, &temp ), &screenProj, &temp );
-
-      pb[i].x = (LONG)( temp.x );
-      pb[i].y = (LONG)( temp.y );
-   }
-
-   numLines += n;
-   Polyline( hMemDC, pb, n );
-}
-
-
 void Draw( float fDeltaTime)
 {
-   vpIndex = 0;
-   ibIndex = 0;
    
-   BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
+    PreDraw();
+    BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
    SelectObject(hMemDC, GetStockObject(DC_PEN));
-//   mWorld.initM3();
 
    fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
    M3 rot(true);
    rotm3(fAngle, &rot);
 
-//   int numX = 50, numY = 50;
-//   float sizeX = 0.5f, sizeY= 0.5f;
-//   for( int i = 0; i < numX; i++ )
-//      for( int j = 0; j < numY; j++ )
-//      {
-//         M3 rotL;
-//         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
-//         SetDCPenColor( hMemDC, RGB( 
-//            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
-//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
-//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
-//
-//         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
-////         rotm3(   fAngle, &rotL );
-//         M3 gridM;
-//         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
-//
-//         gridM.a20 = tran.x;
-//         gridM.a21 = tran.y;
-//         mul3x3( &rotL, &gridM, &gridM );
-//         mul3x3( &gridM, &rot, &gridM );
-//         DrawV2BufTranIm( sq, 5, &gridM );
-//      }
-//
+   int numX = 50, numY = 50;
+   float sizeX = 0.5f, sizeY= 0.5f;
+   for( int i = 0; i < numX; i++ )
+      for( int j = 0; j < numY; j++ )
+      {
+         M3 rotL;
+         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
+         SetDCPenColor( hMemDC, RGB( 
+            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
+            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
+            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
+
+         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
+         M3 gridM;
+         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
+
+         gridM.a20 = tran.x;
+         gridM.a21 = tran.y;
+         mul3x3( &rotL, &gridM, &gridM );
+         mul3x3( &gridM, &rot, &gridM );
+         DrawV2BufTranIm( sq, 5, &gridM );
+      }
+
 
 
    SetDCPenColor( hMemDC, RGB( 255, 255, 255 ));
@@ -321,13 +171,7 @@ void Draw( float fDeltaTime)
    SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
    rotm3( 2.0f * fAngle - M_PI_2, &rot );
    translatem3( 0.0f, 0.0f, &rot );
-//   DrawV2BufTranIm(star, 9, &rot);
-   DrawV2BufTranIm(ss, ssSize, &mm);
-   DrawV2BufTranIm(ss2, ss2Size, &mm);
-   DrawV2BufTranIm( ss3, ss3Size, &mm);
-   if( ccc )
-       for (int i = 0; i < ccc->ss; i++)
-           DrawV2BufTranIm(ccc->vCounties[i].vert, ccc->vCounties[i].vertSize, &mm);
+   DrawV2BufTranIm(star, 9, &rot);
 
 //   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
 //   rotm3( 2.0f * fAngle - M_PI_2, &rot );
@@ -339,7 +183,7 @@ void Draw( float fDeltaTime)
 //   translatem3( mousePosV3.x, mousePosV3.y, &rot );
 //   DrawV2BufTranIm( sproket1, sproket1Size, &rot );
 
-   flushvb();
+//   flushvb();
 
    BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
 }
@@ -356,14 +200,13 @@ void Loop(HWND hwnd)
 	static float fSmoothDelta = fDeltaTime;  //filtered
 	fSmoothDelta = (9.0f * fSmoothDelta + fDeltaTime) * 0.1f;
 
-   numLines = 0;
    Draw( fDeltaTime );
 
 
 	fTraceTick += fDeltaTime;
 	if (fTraceTick > 1.0)
 	{
-		printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, numLines );
+		printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, getNumLines() );
 		fTraceTick = 0.0;
 	}
 
@@ -373,10 +216,7 @@ void Loop(HWND hwnd)
 void Ding()
 {
    srand((int)time(0));
-
-    sproket1 = GenSproket( 25, 1.1f, &sproket1Size );
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
-
 }
 
 
@@ -388,18 +228,8 @@ void main(void)
    curr = first;
 	QueryPerformanceFrequency(&freq);
 
-   ib = (DWORD*)malloc( sizeof( DWORD ) * NPOINTS );
-   vpp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
-   vp = (POINT*)malloc( sizeof( POINT ) * NPOINTS );
-
     Ding();
-#ifdef _DEBUG
-    ccc = LoadCounties("..\\gol1\\n.csv");
-#else
-    ccc = LoadCounties("n.csv");
-#endif
-
-
+    InitRender();
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
 	wndClass.hInstance = GetModuleHandle(0);
@@ -433,28 +263,9 @@ void main(void)
    if( sproket1 ) { free( sproket1 ); sproket1 = NULL; };
    if( wheel1 ) { free( wheel1 ); wheel1 = NULL; };
 
-   free( vp );
-   free( vpp );
-   free( ib );
+   DoneRender();
 }
 
-
-void Proj()
-{
-    V3 zoomCenter;
-    mulv3xm3( mulv3xm3(&screenOffs, &screenProjInv, &zoomCenter), &mWorldInv, &zoomCenter );
-
-    printf( "zoom %f, screenOffs %f * %f, zoomCenter %f * %f\n", zoom, screenOffs.x, screenOffs.y, zoomCenter.x, zoomCenter.y );
-    M3 zoomMat;
-    zoomMat.initM3();
-
-    zoomMat.a00 = zoomMat.a11 = zoom;
-    zoomMat.a20 = zoomCenter.x * ( 1.0f - zoom );
-    zoomMat.a21 = zoomCenter.y * ( 1.0f - zoom );
-
-    mul3x3( &zoomMat, &mWorld, &mWorld );
-    invm3(&mWorld, &mWorldInv);
-}
 
 void Aquire(HWND hwnd, bool bInit = false )
 {
