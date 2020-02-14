@@ -17,6 +17,8 @@
 #include "bench.h"
 #include "render.h"
 
+#include <random>
+
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -38,6 +40,7 @@ POINT clRSize;
 HDC hdc;
 HDC hBackDC;
 
+int dens[10000];
 
 
 
@@ -85,6 +88,8 @@ size_t wheel1Size;
 
 V3 mousePosV3;
 
+float maxy(1.0f);
+float miny(1111111111111.0f);
 
 
 V2* GenWheel( int _tess, float _fRadius, size_t* nBufSize )
@@ -108,84 +113,80 @@ V2* GenWheel( int _tess, float _fRadius, size_t* nBufSize )
    return vbuf;
 }
 
+float field(float x, float y)
+{
+    float frq = 10.0f;
+    float ph = 0.0f;
+    return (1.0f + sinf(frq * sqrtf(x * x + y * y) + ph)) * 0.5f;
+}
+
+void func(float* ox, float* oy)
+{
+    bool b = false;
+
+}
+
+
+float fsindist()
+{
+    bool rev = false;
+    float arg = rand() / (float)RAND_MAX * 2.0f; //0..1
+    if (arg > 0.5f)
+    {
+        rev = true;
+        arg = 1.0f - arg;
+    }
+    arg *= 2.0f;
+
+    arg = 2.0f * arg - 1.0f;//-1 .. 1
+    float f = asinf(arg);// +2.0f * M_PI * (float)(rand() % 5);
+    return ( f + M_PI_2 )/ M_PI;
+}
+
+
+float fnormaldist()
+{
+    float arg = rand() / (float)RAND_MAX;
+    float x = sqrtf(-logf(arg));
+    return x;
+}
+
+std::random_device rd{};
+std::mt19937 gen{ rd() };
+std::normal_distribution<> d{ 0, 200 };
 
 void Draw( float fDeltaTime)
 {
    
     PreDraw();
     BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
-    
-   SelectObject(hMemDC, GetStockObject(DC_PEN));
+    SelectObject(hMemDC, GetStockObject(DC_PEN));
+    SetDCPenColor(hMemDC, (COLORREF)(RGB(255, 255, 255)));
 
-   fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
-   M3 rot(true);
-   rotm3(fAngle, &rot);
+    for (int i = 0; i < clRSize.x; i++)
+    {
+        POINT p;
+        p.y = rand() % 10 + clRSize.y * 0.05f;
+        p.x = fnormaldist() * (float)(clRSize.x);
+        p.x = d(gen) + ( clRSize.x * 0.5f ); 
+        if ((p.x >= 0) && (p.x < clRSize.x))
+        {
+            SetPixel(hMemDC, p.x, p.y, RGB(255, 255, 255));
+            dens[p.x % clRSize.x]++;
+        }
+    }
 
-   int numX = 50, numY = 50;
-   float sizeX = 0.5f, sizeY= 0.5f;
-   for( int i = 0; i < numX; i++ )
-      for( int j = 0; j < numY; j++ )
-      {
-         M3 rotL;
-         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
-         SetDCPenColor( hMemDC, RGB( 
-            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
-
-         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
-         M3 gridM;
-         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
-
-         gridM.a20 = tran.x;
-         gridM.a21 = tran.y;
-         mul3x3( &rotL, &gridM, &gridM );
-         mul3x3( &gridM, &rot, &gridM );
-         DrawV2BufTranIm( sq, 5, &gridM );
-      }
+    miny = 1e30f;
+    for (int i = 0; i < clRSize.x; i++)
+    {
+        if (dens[i] > maxy) maxy = dens[i];
+        if (dens[i] < miny) miny = dens[i];
+        MoveToEx(hMemDC, i, clRSize.y, 0);
+        LineTo(hMemDC, i, ( clRSize.y - ( dens[i]) / maxy * clRSize.y * 0.8f));
+    }
 
 
-
-   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ));
-   rotm3( 2.0f * fAngle, &rot );
-   translatem3( 1.0f, 1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
-
-   SetDCPenColor( hMemDC, RGB( 255, 0, 0 ) );
-   rotm3( 2.0f * fAngle + M_PI_2, &rot );
-   translatem3( 1.0f, -1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
-
-   SetDCPenColor( hMemDC, RGB( 0, 255, 0 ) );
-   rotm3( 2.0f * fAngle + M_PI, &rot );
-   translatem3( -1.0f, -1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
-
-   SetDCPenColor( hMemDC, RGB( 0, 0, 255 ) );
-   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-   translatem3( -1.0f, 1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
-
-
-   M3 mm;
-   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
-   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-   translatem3( 0.0f, 0.0f, &rot );
-   DrawV2BufTranIm(star, 9, &rot);
-
-//   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
-//   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-//   translatem3( mousePosV3.x, mousePosV3.y, &rot );
-//   DrawV2BufTranIm( wheel1, wheel1Size, &rot );
-//
-//   SetDCPenColor( hMemDC, RGB( 0, 255, 255 ) );
-//   rotm3( 13.0f * fAngle - M_PI_2, &rot );
-//   translatem3( mousePosV3.x, mousePosV3.y, &rot );
-//   DrawV2BufTranIm( sproket1, sproket1Size, &rot );
-
-//   flushvb();
-
-   BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
+    BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
 }
 
 
@@ -206,7 +207,7 @@ void Loop(HWND hwnd)
 	fTraceTick += fDeltaTime;
 	if (fTraceTick > 1.0)
 	{
-		printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, getNumLines() );
+        printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, miny: %f, maxy: %f\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, miny, maxy );
 		fTraceTick = 0.0;
 	}
 
@@ -269,7 +270,9 @@ void main(void)
 
 void Aquire(HWND hwnd, bool bInit = false )
 {
-	GetClientRect(hwnd, &clRect);
+    maxy = -1e30f;
+    miny = 1e30f;
+    GetClientRect(hwnd, &clRect);
 	clRSize.x = clRect.right - clRect.left;
 	clRSize.y = clRect.bottom - clRect.top;
     float fAspectRatio = clRSize.x / (float)clRSize.y;
@@ -314,6 +317,7 @@ void Aquire(HWND hwnd, bool bInit = false )
     FillRect( hBackDC, &clRect, (HBRUSH)GetStockObject( BLACK_PEN ) );
     BITMAP b;
     GetObject( hbbufBM, sizeof( BITMAP ), &b );
+    memset(dens, 0, clRSize.x * sizeof(int));
 }
 
 
