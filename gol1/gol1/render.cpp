@@ -1,7 +1,8 @@
 #include "zmath.h"
 #include "windows.h"
+#include "render.h"
 
-HDC hMemDC;
+HDC hBackBufferDC;
 const int NPOINTS(10000);
 POINT* vp, * vpp;
 DWORD* ib;
@@ -17,6 +18,10 @@ size_t numLines;
 
 V3 screenOffs;
 float zoom(1.0f);
+
+V2 v2Buf[NPOINTS];
+
+
 
 
 size_t getNumLines()
@@ -40,14 +45,13 @@ void InitRender()
 }
 void flushvb()
 {
-    PolyPolyline(hMemDC, vpp, ib, ibIndex);
+    PolyPolyline(hBackBufferDC, vpp, ib, ibIndex);
     vpIndex = 0;
     ibIndex = 0;
     ib[ibIndex] = 0;
 }
 
-
-void DrawV2BufTranIm(V2* buf, int n, M3* tran)
+void DrawV2BufIm(V2* buf, int n)
 {
     if (n < 2)
         return;
@@ -64,15 +68,69 @@ void DrawV2BufTranIm(V2* buf, int n, M3* tran)
     V3 temp, src; src.z = 1.0f;
     for (int i = 0; i < n; i++)
     {
-        src.x = buf[i].x; src.y = buf[i].y;
-        mulv3xm3(mulv3xm3(mulv3xm3(&src, tran, &temp), &mWorld, &temp), &screenProj, &temp);
+        src.v2 = buf[i];
+        mulv3xm3(mulv3xm3(&src, &mWorld, &temp), &screenProj, &temp);
 
         pb[i].x = (LONG)(temp.x);
         pb[i].y = (LONG)(temp.y);
     }
 
     numLines += n;
-    Polyline(hMemDC, pb, n);
+    Polyline(hBackBufferDC, pb, n);
+
+}
+
+void DrawV2BufImAnglePos(V2* buf, int n, float fAngle, const V2* vPos, DWORD argb)
+{
+    M3 m;
+    rotm3(fAngle, &m);
+    translatem3(vPos, &m);
+    SetDCPenColor(hBackBufferDC, RGB(((argb & ((1 << 24) - 1)) >> 16), ((argb & ((1 << 16) - 1)) >> 8), ((argb & ((1 << 8) - 1)))));
+    DrawV2BufTranIm(buf, n, &m);
+    
+}
+void DrawV2BufImAnglePivotPos(V2* buf, int n, float fAngle, const V2* vPivot, const V2* vPos, DWORD argb)
+{
+    M3 m;
+    V3 v; v.v2 = *vPivot; v.z = 1.0f;
+    rotm3(fAngle, &m);
+    mulv3xm3(&v, &m, &v);
+    v2Add(vPos, &v.v2, &v.v2);
+    translatem3(&v, &m);
+    SetDCPenColor(hBackBufferDC, RGB(((argb & ((1 << 24) - 1)) >> 16), ((argb & ((1 << 16) - 1)) >> 8), ((argb & ((1 << 8) - 1)))));
+    DrawV2BufTranIm(buf, n, &m);
+}
+
+void DrawV2BufImAngle(V2* buf, int n, float fAngle, DWORD argb)
+{
+    M3 m;
+    rotm3(fAngle, &m);
+    SetDCPenColor(hBackBufferDC, RGB(((argb & ((1 << 24) - 1)) >> 16), ((argb & ((1 << 16) - 1)) >> 8), ((argb & ((1 << 8) - 1)))));
+    DrawV2BufTranIm(buf, n, &m);
+}
+
+
+void DrawV2BufTranIm(V2* buf, int n, M3* tran, DWORD argb)
+{
+    SetDCPenColor(hBackBufferDC, RGB(((argb & ((1 << 24) - 1)) >> 16), ((argb & ((1 << 16) - 1)) >> 8), ((argb & ((1 << 8) - 1)))));
+    DrawV2BufTranIm(buf, n, tran);
+}
+
+void DrawV2BufTranIm(V2* buf, int n, M3* tran)
+{
+    if (n > NPOINTS)
+        return;
+
+    V3 s;
+    s.z = 1.0f;
+    for (int i = 0; i < n; i++)
+    {
+        s.v2 = buf[i];
+        mulv3xm3(&s, tran, &s);
+        v2Buf[i] = s.v2;
+    }
+
+    DrawV2BufIm(v2Buf, n);
 }
 
 void Proj()

@@ -24,6 +24,7 @@ union V3
         float x, y, z;
     };
     float v[3];
+    V2 v2;
     static const int CARD = 3;
 };
 
@@ -37,6 +38,7 @@ union V4
         float x, y, z, w;
     };
     float v[4];
+    V3 v3;
     static const int CARD = 4;
 };
 

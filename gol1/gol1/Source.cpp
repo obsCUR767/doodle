@@ -113,79 +113,83 @@ void Draw( float fDeltaTime)
 {
    
     PreDraw();
-    BitBlt( hMemDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
+    BitBlt( hBackBufferDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
-   SelectObject(hMemDC, GetStockObject(DC_PEN));
+   SelectObject(hBackBufferDC, GetStockObject(DC_PEN));
 
    fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
    M3 rot(true);
    rotm3(fAngle, &rot);
 
-   int numX = 50, numY = 50;
-   float sizeX = 0.5f, sizeY= 0.5f;
-   for( int i = 0; i < numX; i++ )
-      for( int j = 0; j < numY; j++ )
-      {
-         M3 rotL;
-         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
-         SetDCPenColor( hMemDC, RGB( 
-            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
-            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
+//   int numX = 50, numY = 50;
+//   float sizeX = 0.5f, sizeY= 0.5f;
+//   for( int i = 0; i < numX; i++ )
+//      for( int j = 0; j < numY; j++ )
+//      {
+//         M3 rotL;
+//         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
+//         SetDCPenColor( hBackBufferDC, RGB( 
+//            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
+//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
+//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
+//
+//         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
+//         M3 gridM;
+//         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
+//
+//         gridM.a20 = tran.x;
+//         gridM.a21 = tran.y;
+//         mul3x3( &rotL, &gridM, &gridM );
+//         mul3x3( &gridM, &rot, &gridM );
+//         DrawV2BufTranIm( sq, 5, &gridM );
+//      }
 
-         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
-         M3 gridM;
-         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
+//(V2* buf, int n, float fAngle, V2* vPos, DWORD argb);
+   V2 vvpos(1.0f, 1.0f);
+   V2 vvpivot(0.5f, 0.5f);
 
-         gridM.a20 = tran.x;
-         gridM.a21 = tran.y;
-         mul3x3( &rotL, &gridM, &gridM );
-         mul3x3( &gridM, &rot, &gridM );
-         DrawV2BufTranIm( sq, 5, &gridM );
-      }
-
-
-
-   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ));
+   DrawV2BufImAnglePos(star, 9, 5.0f * fAngle, &vvpos, -1);
+   DrawV2BufImAnglePivotPos(star, 9, 5.0f * fAngle, &vvpivot, &vvpos, -1);
+   SetDCPenColor( hBackBufferDC, RGB( 255, 255, 255 ));
    rotm3( 2.0f * fAngle, &rot );
    translatem3( 1.0f, 1.0f, &rot );
    DrawV2BufTranIm( star, 9, &rot );
 
-   SetDCPenColor( hMemDC, RGB( 255, 0, 0 ) );
+   SetDCPenColor( hBackBufferDC, RGB( 255, 0, 0 ) );
    rotm3( 2.0f * fAngle + M_PI_2, &rot );
    translatem3( 1.0f, -1.0f, &rot );
    DrawV2BufTranIm( star, 9, &rot );
 
-   SetDCPenColor( hMemDC, RGB( 0, 255, 0 ) );
+   SetDCPenColor( hBackBufferDC, RGB( 0, 255, 0 ) );
    rotm3( 2.0f * fAngle + M_PI, &rot );
    translatem3( -1.0f, -1.0f, &rot );
    DrawV2BufTranIm( star, 9, &rot );
 
-   SetDCPenColor( hMemDC, RGB( 0, 0, 255 ) );
+   SetDCPenColor( hBackBufferDC, RGB( 0, 0, 255 ) );
    rotm3( 2.0f * fAngle - M_PI_2, &rot );
    translatem3( -1.0f, 1.0f, &rot );
    DrawV2BufTranIm( star, 9, &rot );
 
 
    M3 mm;
-   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
+   SetDCPenColor( hBackBufferDC, RGB( 255, 255, 255 ) );
    rotm3( 2.0f * fAngle - M_PI_2, &rot );
    translatem3( 0.0f, 0.0f, &rot );
    DrawV2BufTranIm(star, 9, &rot);
 
-//   SetDCPenColor( hMemDC, RGB( 255, 255, 255 ) );
+//   SetDCPenColor( hBackBufferDC, RGB( 255, 255, 255 ) );
 //   rotm3( 2.0f * fAngle - M_PI_2, &rot );
 //   translatem3( mousePosV3.x, mousePosV3.y, &rot );
 //   DrawV2BufTranIm( wheel1, wheel1Size, &rot );
 //
-//   SetDCPenColor( hMemDC, RGB( 0, 255, 255 ) );
+//   SetDCPenColor( hBackBufferDC, RGB( 0, 255, 255 ) );
 //   rotm3( 13.0f * fAngle - M_PI_2, &rot );
 //   translatem3( mousePosV3.x, mousePosV3.y, &rot );
 //   DrawV2BufTranIm( sproket1, sproket1Size, &rot );
 
 //   flushvb();
 
-   BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hMemDC, 0, 0, SRCCOPY );
+   BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hBackBufferDC, 0, 0, SRCCOPY );
 }
 
 
@@ -295,11 +299,11 @@ void Aquire(HWND hwnd, bool bInit = false )
 //    Proj( );
 
     ReleaseDC( hwnd, hdc );
-    ReleaseDC( hwnd, hMemDC );
+    ReleaseDC( hwnd, hBackBufferDC );
     ReleaseDC( hwnd, hBackDC );
 
     hdc = GetDC(hwnd);
-    hMemDC = CreateCompatibleDC( hdc );
+    hBackBufferDC = CreateCompatibleDC( hdc );
     hBackDC = CreateCompatibleDC( hdc );
 
     DeleteObject( hbckBM );
@@ -309,7 +313,7 @@ void Aquire(HWND hwnd, bool bInit = false )
     hbbufBM = CreateCompatibleBitmap( hdc, clRSize.x, clRSize.y );
 
     HGDIOBJ hOldBmpBack = SelectObject( hBackDC, hbckBM );
-    HGDIOBJ hOldBmpBBuf = SelectObject( hMemDC, hbbufBM );
+    HGDIOBJ hOldBmpBBuf = SelectObject( hBackBufferDC, hbbufBM );
 
     FillRect( hBackDC, &clRect, (HBRUSH)GetStockObject( BLACK_PEN ) );
     BITMAP b;
