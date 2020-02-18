@@ -8,8 +8,19 @@ extern M3 mWorldInv;
 extern float zoom;
 extern V3 screenOffs;
 
+extern HBITMAP hbckBM;
+extern HBITMAP hbbufBM;
+
+extern RECT clRect;
+extern POINT clRSize;
+
+extern HDC hdc;
+extern HDC hBackDC;
+
+#define XRGB(r, g, b) ((127 << 24) | ( r << 16 ) | ( g << 8 ) | b )
 
 void PreDraw();
+void PostDraw();
 void InitRender();
 size_t getNumLines();
 void flushvb();
@@ -21,3 +32,5 @@ void DrawV2BufImAnglePos(V2* buf, int n, float fAngle, const V2* vPos, DWORD arg
 void DrawV2BufImAnglePivotPos(V2* buf, int n, float fAngle, const V2* vPivot, const V2* vPos, DWORD argb);
 void DoneRender();
 void Proj();
+void ToWorld(const LPPOINT p, V3* out);
+void ToScreen(const V3* p, LPPOINT out);

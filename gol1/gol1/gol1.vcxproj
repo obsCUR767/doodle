@@ -210,6 +210,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bench.cpp" />
+    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="Source.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</CompileAs>
@@ -217,6 +218,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bench.h" />
+    <ClInclude Include="entity.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="prim.h" />
     <ClInclude Include="render.h" />

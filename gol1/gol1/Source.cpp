@@ -17,6 +17,8 @@
 #include "bench.h"
 #include "render.h"
 
+#include "entity.h"
+
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -28,17 +30,6 @@ float fAngle = 0.0f;
 LARGE_INTEGER first, freq, last, curr;
 float fTraceTick = 0.0f;
 bool bInit = false;
-
-HBITMAP hbckBM;
-HBITMAP hbbufBM;
-
-RECT clRect;
-POINT clRSize;
-
-HDC hdc;
-HDC hBackDC;
-
-
 
 
 
@@ -145,74 +136,50 @@ void Draw( float fDeltaTime)
 //      }
 
 //(V2* buf, int n, float fAngle, V2* vPos, DWORD argb);
-   V2 vvpos(1.0f, 1.0f);
-   V2 vvpivot(0.5f, 0.5f);
+   V2 vvpos(0.0f, 0.5f);
+   V2 vvpivot(0.0f, -0.5f);
 
    DrawV2BufImAnglePos(star, 9, 5.0f * fAngle, &vvpos, -1);
    DrawV2BufImAnglePivotPos(star, 9, 5.0f * fAngle, &vvpivot, &vvpos, -1);
-   SetDCPenColor( hBackBufferDC, RGB( 255, 255, 255 ));
-   rotm3( 2.0f * fAngle, &rot );
-   translatem3( 1.0f, 1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
 
-   SetDCPenColor( hBackBufferDC, RGB( 255, 0, 0 ) );
-   rotm3( 2.0f * fAngle + M_PI_2, &rot );
-   translatem3( 1.0f, -1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
+   vvpos.x = 1.0f; vvpos.y = 1.0f;
+   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, -1);
 
-   SetDCPenColor( hBackBufferDC, RGB( 0, 255, 0 ) );
-   rotm3( 2.0f * fAngle + M_PI, &rot );
-   translatem3( -1.0f, -1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
+   vvpos.x = 1.0f; vvpos.y = -1.0f;
+   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, XRGB(255, 0, 0));
 
-   SetDCPenColor( hBackBufferDC, RGB( 0, 0, 255 ) );
-   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-   translatem3( -1.0f, 1.0f, &rot );
-   DrawV2BufTranIm( star, 9, &rot );
+   vvpos.x = -1.0f; vvpos.y = -1.0f;
+   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 255, 0));
+
+   vvpos.x = -1.0f; vvpos.y = 1.0f;
+   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 0, 255));
 
 
-   M3 mm;
-   SetDCPenColor( hBackBufferDC, RGB( 255, 255, 255 ) );
-   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-   translatem3( 0.0f, 0.0f, &rot );
-   DrawV2BufTranIm(star, 9, &rot);
+   vvpos.x = .0f; vvpos.y = .0f;
+   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(255, 255, 0));
 
-//   SetDCPenColor( hBackBufferDC, RGB( 255, 255, 255 ) );
-//   rotm3( 2.0f * fAngle - M_PI_2, &rot );
-//   translatem3( mousePosV3.x, mousePosV3.y, &rot );
-//   DrawV2BufTranIm( wheel1, wheel1Size, &rot );
-//
-//   SetDCPenColor( hBackBufferDC, RGB( 0, 255, 255 ) );
-//   rotm3( 13.0f * fAngle - M_PI_2, &rot );
-//   translatem3( mousePosV3.x, mousePosV3.y, &rot );
-//   DrawV2BufTranIm( sproket1, sproket1Size, &rot );
-
-//   flushvb();
-
-   BitBlt( hdc, 0, 0, clRSize.x, clRSize.y, hBackBufferDC, 0, 0, SRCCOPY );
+   PostDraw();
 }
-
 
 
 void Loop(HWND hwnd)
 {
-	last = curr;
-	QueryPerformanceCounter(&curr);
+    last = curr;
+    QueryPerformanceCounter(&curr);
 
-	float fLifeTime = (curr.QuadPart - first.QuadPart) / (float)freq.QuadPart;
-	float fDeltaTime = (curr.QuadPart - last.QuadPart) / (float)freq.QuadPart;
-	static float fSmoothDelta = fDeltaTime;  //filtered
-	fSmoothDelta = (9.0f * fSmoothDelta + fDeltaTime) * 0.1f;
+    float fLifeTime = (curr.QuadPart - first.QuadPart) / (float)freq.QuadPart;
+    float fDeltaTime = (curr.QuadPart - last.QuadPart) / (float)freq.QuadPart;
+    static float fSmoothDelta = fDeltaTime;  //filtered
+    fSmoothDelta = (9.0f * fSmoothDelta + fDeltaTime) * 0.1f;
 
-   Draw( fDeltaTime );
+    Draw( fDeltaTime );
 
-
-	fTraceTick += fDeltaTime;
-	if (fTraceTick > 1.0)
-	{
-		printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, getNumLines() );
-		fTraceTick = 0.0;
-	}
+    fTraceTick += fDeltaTime;
+    if (fTraceTick > 1.0)
+    {
+	    printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, getNumLines() );
+	    fTraceTick = 0.0;
+    }
 
 }
 
