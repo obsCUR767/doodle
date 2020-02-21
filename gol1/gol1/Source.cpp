@@ -19,6 +19,7 @@
 
 #include "entity.h"
 
+
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -155,8 +156,10 @@ void Draw( float fDeltaTime)
    DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 0, 255));
 
 
-   vvpos.x = .0f; vvpos.y = .0f;
-   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(255, 255, 0));
+//   vvpos.x = .0f; vvpos.y = .0f;
+//   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(255, 255, 0));
+
+   DrawEntities();
 
    PostDraw();
 }
@@ -174,6 +177,8 @@ void Loop(HWND hwnd)
 
     Draw( fDeltaTime );
 
+    UpdateEntities(fDeltaTime);
+
     fTraceTick += fDeltaTime;
     if (fTraceTick > 1.0)
     {
@@ -188,6 +193,13 @@ void Ding()
 {
    srand((int)time(0));
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
+    InitPlayerEntity();
+    InitEntities();
+//    playerEntity.Init =   InitPlayer;
+//    playerEntity.Draw =   DrawPlayer;
+//    playerEntity.Update = UpdatePlayer;
+//    playerEntity.Input =  InputPlayer;
+//    playerEntity.Done =   0;
 }
 
 
@@ -235,6 +247,7 @@ void main(void)
    if( wheel1 ) { free( wheel1 ); wheel1 = NULL; };
 
    DoneRender();
+   DoneEntities();
 }
 
 
@@ -290,6 +303,7 @@ void Aquire(HWND hwnd, bool bInit = false )
 
 LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+
     screenOffs.x = 0.0f;
     screenOffs.y = 0.0f;
     screenOffs.z = 1.0f;
@@ -415,6 +429,8 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         Loop( hwnd );
     }
     
+    InputEntities(msg, wParam, lParam);
+
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 

@@ -333,8 +333,8 @@ inline V2* mulv2xm2( const V2* v, const M2* m, V2* res )
    V2 vLoc;
    const V2 *vp( ( v == res ) ? ( vLoc = *v, &vLoc ) : v );
    
-   res->x = v->x * m->a00 + v->y * m->a10;
-    res->y = v->x * m->a01 + v->y * m->a11;
+    res->x = vp->x * m->a00 + vp->y * m->a10;
+    res->y = vp->x * m->a01 + vp->y * m->a11;
     return res;
 }
 

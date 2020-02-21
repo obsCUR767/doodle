@@ -84,7 +84,7 @@ void ToScreen(const V3* p, LPPOINT out)
 }
 
 
-void DrawV2BufImAnglePos(V2* buf, int n, float fAngle, const V2* vPos, DWORD argb)
+void DrawV2BufImAnglePos(const V2* buf, int n, float fAngle, const V2* vPos, DWORD argb)
 {
     M3 m;
     rotm3(fAngle, &m);
@@ -92,7 +92,8 @@ void DrawV2BufImAnglePos(V2* buf, int n, float fAngle, const V2* vPos, DWORD arg
     DrawV2BufTranIm(buf, n, &m, argb);
     
 }
-void DrawV2BufImAnglePivotPos(V2* buf, int n, float fAngle, const V2* vPivot, const V2* vPos, DWORD argb)
+
+void DrawV2BufImAnglePivotPos(const V2* buf, int n, float fAngle, const V2* vPivot, const V2* vPos, DWORD argb)
 {
     M3 m;
     V3 v; v.v2 = *vPivot; v.z = 1.0f;
@@ -103,7 +104,7 @@ void DrawV2BufImAnglePivotPos(V2* buf, int n, float fAngle, const V2* vPivot, co
     DrawV2BufTranIm(buf, n, &m, argb);
 }
 
-void DrawV2BufImAngle(V2* buf, int n, float fAngle, DWORD argb)
+void DrawV2BufImAngle(const V2* buf, int n, float fAngle, DWORD argb)
 {
     M3 m;
     rotm3(fAngle, &m);
@@ -111,13 +112,13 @@ void DrawV2BufImAngle(V2* buf, int n, float fAngle, DWORD argb)
 }
 
 
-void DrawV2BufTranIm(V2* buf, int n, M3* tran, DWORD argb)
+void DrawV2BufTranIm(const V2* buf, int n, M3* tran, DWORD argb)
 {
     SetDCPenColor(hBackBufferDC, RGB(((argb & ((1 << 24) - 1)) >> 16), ((argb & ((1 << 16) - 1)) >> 8), ((argb & ((1 << 8) - 1)))));
     DrawV2BufTranIm(buf, n, tran);
 }
 
-void DrawV2BufTranIm(V2* buf, int n, M3* tran)
+void DrawV2BufTranIm(const V2* buf, int n, M3* tran)
 {
     if (n > NPOINTS)
         return;
@@ -134,7 +135,7 @@ void DrawV2BufTranIm(V2* buf, int n, M3* tran)
     DrawV2BufIm(v2Buf, n);
 }
 
-void DrawV2BufIm(V2* buf, int n)
+void DrawV2BufIm(const V2* buf, int n)
 {
     if (n < 2)
         return;
