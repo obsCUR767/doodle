@@ -42,18 +42,3 @@ void UpdateEntities(float);
 void InputEntities(unsigned int, unsigned int, long);
 
 
-struct Player
-{
-    V3 pos; //z is angle
-    V3 spd; //z spd is angular spd
-    V3 accel; //z spd is angular spd
-
-    bool bFinger;
-
-    prim2d geom;
-    float fLifeTime;
-};
-
-extern Player player;
-extern Entity playerEntity; 
-void InitPlayerEntity();

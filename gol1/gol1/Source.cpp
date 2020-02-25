@@ -18,6 +18,7 @@
 #include "render.h"
 
 #include "entity.h"
+#include "player.h"
 
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
