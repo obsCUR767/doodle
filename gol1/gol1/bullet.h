@@ -16,6 +16,6 @@ struct Bullet
     bool bAlive;
 };
 
-extern Bullet bullet;
 extern Entity bulletEntity;
 void InitBulletEntity();
+void FireBullet(V2* pos, V2* speed, float fAngle);

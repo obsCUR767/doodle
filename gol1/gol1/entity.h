@@ -5,14 +5,14 @@
 
 
 
-typedef void (*InitFunc)();
-typedef bool (*IsAliveFunc)();
-typedef void (*SpawnFunc)();
-typedef void (*DrawFunc)();
-typedef void (*UpdateFunc)(float);
-typedef void (*DoneFunc)();
-typedef void (*DieFunc)();
-typedef void (*InputFunc)(unsigned int, unsigned int, long);
+typedef void (*InitFunc)(void*);
+typedef bool (*IsAliveFunc)(void*);
+typedef void (*SpawnFunc)(void*);
+typedef void (*DrawFunc)(void*);
+typedef void (*UpdateFunc)(void*, float);
+typedef void (*DoneFunc)(void*);
+typedef void (*DieFunc)(void*);
+typedef void (*InputFunc)(void*, unsigned int, unsigned int, long);
 
 
 

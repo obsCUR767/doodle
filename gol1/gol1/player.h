@@ -14,6 +14,7 @@ struct Player
 
     bool bInputAccel, bInputBreak;
     bool bInputTurnLeft, bInputTurnRight;
+    bool bInputFire;
 
 
     bool bFinger;
@@ -22,6 +23,6 @@ struct Player
     float fLifeTime;
 };
 
-extern Player player;
+extern Player* player;
 extern Entity playerEntity;
 void InitPlayerEntity();
