@@ -196,6 +196,8 @@ void Ding()
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
     InitPlayerEntity();
     InitEntities();
+    zoom = .2f;
+    Proj();
 //    playerEntity.Init =   InitPlayer;
 //    playerEntity.Draw =   DrawPlayer;
 //    playerEntity.Update = UpdatePlayer;

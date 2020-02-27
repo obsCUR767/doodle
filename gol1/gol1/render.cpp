@@ -17,7 +17,7 @@ M3 mWorldInv(true);
 size_t numLines;
 
 V3 screenOffs;
-float zoom(1.0f);
+float zoom(10.0f);
 
 V2 v2Buf[NPOINTS];
 

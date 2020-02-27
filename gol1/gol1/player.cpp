@@ -16,9 +16,9 @@ static V2 star[] = {
 
 static V2 s1[] = {
     { -0.2f, 0.0f },
-{ -0.3f, 0.1f }, { -0.3f, 0.2f }, { -0.2f, 0.3f }, { -0.1f, 0.6f }, { 0.1f, 0.6f }, { 0.1f, 0.5f }, { 0.2f, 0.45f }, { 0.1f, 0.4f }, { 0.1f, 0.3f }, { 0.2f, 0.2f }, { 0.7f, 0.1f },
+{ -0.4f, 0.1f }, { -0.4f, 0.2f }, { -0.2f, 0.3f }, { -0.1f, 0.6f }, { 0.1f, 0.6f }, { 0.1f, 0.5f }, { 0.2f, 0.45f }, { 0.1f, 0.4f }, { 0.1f, 0.3f }, { 0.2f, 0.2f }, { 0.7f, 0.1f },
 { 0.8f, 0.0f },
-{ 0.7f, -0.1f }, { 0.2f, -0.2f }, { 0.1f, -0.3f }, { 0.1f, -0.4f }, { 0.2f, -0.45f }, { 0.1f, -0.5f }, { 0.1f, -0.6f }, { -0.1f, -0.6f }, { -0.2f, -0.3f }, { -0.3f, -0.2f }, { -0.3f, -0.1f },
+{ 0.7f, -0.1f }, { 0.2f, -0.2f }, { 0.1f, -0.3f }, { 0.1f, -0.4f }, { 0.2f, -0.45f }, { 0.1f, -0.5f }, { 0.1f, -0.6f }, { -0.1f, -0.6f }, { -0.2f, -0.3f }, { -0.4f, -0.2f }, { -0.4f, -0.1f },
 { -0.2f, 0.0f }
 };
 
@@ -28,15 +28,19 @@ static V2 s1[] = {
 
 void InitPlayer()
 {
-    memset(player.pos.v, 0, sizeof(V3));
-    memset(player.spd.v, 0, sizeof(V3));
-    memset(player.accel.v, 0, sizeof(V3));
+    v2Zero( &player.pos );
+    v2Zero( &player.spd );
+    v2Zero( &player.accel );
 
 
     player.geom.v = s1;
     player.geom.size = sizeof(s1) / sizeof(V2);
     player.fLifeTime = 0.0f;
     player.bFinger = false;
+}
+
+void SpawnPlayer()
+{
 }
 
 void UpdatePlayer(float fDeltaTime)
@@ -47,7 +51,7 @@ void UpdatePlayer(float fDeltaTime)
     static const float TURNSCALEACC(3.0f);
     static const float TURNSCALE(30.0f);
     static float tick;
-    static float traceInterval(0.1);
+    static float traceInterval(0.1f);
     player.fLifeTime += fDeltaTime;
     V2 acc;
     M2 rot;
@@ -56,7 +60,7 @@ void UpdatePlayer(float fDeltaTime)
     player.fAngAccel = (player.bInputTurnLeft ? TURNSCALEACC : player.bInputTurnRight ? -TURNSCALEACC : 0.0f);
     player.fAngSpeed += player.fAngAccel * fDeltaTime;
     player.fAngle += player.fAngSpeed * fDeltaTime;
-    fmodf(player.fAngle, 2.0f * M_PI);
+    fmodf(player.fAngle, 2.0f * fM_PI);
 
     rotm2(player.fAngle, &rot);
     acc.y = 0.0f;
@@ -71,6 +75,17 @@ void UpdatePlayer(float fDeltaTime)
         printf("delta %f, %f\n", acc.x, acc.y);
         tick = traceInterval;
     }
+}
+
+void ResetPlayer()
+{
+    v2Zero(&player.pos);
+    v2Zero(&player.spd);
+    v2Zero(&player.accel);
+
+    player.fAngle = 0.0f;
+    player.fAngSpeed = 0.0f;
+    player.fAngAccel = 0.0f;
 }
 
 
@@ -122,9 +137,7 @@ void InputPlayer(unsigned int msg, unsigned int wparam, long lparam)
 
         if (wparam == 'X')
         {
-            memset(player.pos.v, 0, sizeof(V3));
-            memset(player.spd.v, 0, sizeof(V3));
-            memset(player.accel.v, 0, sizeof(V3));
+            ResetPlayer();
         }
     }
 }
@@ -138,6 +151,6 @@ void InitPlayerEntity()
     playerEntity.Update = UpdatePlayer;
     playerEntity.Draw = DrawPlayer;
     playerEntity.Input = InputPlayer;
-
+    playerEntity.IsAlive = 0; //player is immortal of course
     AddEntity(playerEntity);
 }

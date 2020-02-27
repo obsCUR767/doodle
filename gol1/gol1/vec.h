@@ -11,6 +11,10 @@ union V2
     {
         float x, y;
     };
+    struct
+    {
+        float mod, arg;
+    };
     float v[2];
     static const int CARD = 2;
 };
@@ -44,6 +48,7 @@ union V4
 };
 
 /*
+    Zero
     Len  
     Norm 
     Scale
@@ -51,6 +56,12 @@ union V4
     Add  
     Sub  
 */
+inline void v2Zero(V2* res)
+{
+    res->x = 0.0f;
+    res->y = 0.0f;
+}
+
 inline float v2Len( const V2* v )
 {
     return sqrtf( v->x * v->x + v->y * v->y );
@@ -109,6 +120,13 @@ inline float v2Dot( const V2* v1, const V2* v2 )
 
 
 
+
+inline void v3Zero(V3* res)
+{
+    res->x = 0.0f;
+    res->y = 0.0f;
+    res->z = 0.0f;
+}
 
 inline float v3Len( const V3* v )
 {
@@ -187,6 +205,7 @@ inline V3* v3Cross( const V3* v1, const V3* v2, V3* res )
 
 
 /*
+    Zero
     Len
     Norm
     Scale
@@ -196,6 +215,14 @@ inline V3* v3Cross( const V3* v1, const V3* v2, V3* res )
     dot
     cross
 */
+
+inline void v4Zero(V4* res)
+{
+    res->x = 0.0f;
+    res->y = 0.0f;
+    res->z = 0.0f;
+    res->w = 0.0f;
+}
 
 inline float v4Len( const V4* v )
 {

@@ -6,9 +6,12 @@
 
 
 typedef void (*InitFunc)();
+typedef bool (*IsAliveFunc)();
+typedef void (*SpawnFunc)();
 typedef void (*DrawFunc)();
 typedef void (*UpdateFunc)(float);
 typedef void (*DoneFunc)();
+typedef void (*DieFunc)();
 typedef void (*InputFunc)(unsigned int, unsigned int, long);
 
 
@@ -23,10 +26,14 @@ struct prim2d
 struct Entity
 {
     InitFunc Init;
+    SpawnFunc Spawn;
     DrawFunc Draw;
     UpdateFunc Update;
     DoneFunc Done;
+    DieFunc Die;
     InputFunc Input;
+    IsAliveFunc IsAlive;
+    void* data;
 };
 
 extern Entity Entities[ENTITIES];

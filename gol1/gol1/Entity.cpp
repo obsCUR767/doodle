@@ -17,6 +17,7 @@ size_t AddEntity(Entity e)
 
     Entities[entityCount] = e;
     entityCount++;
+    if (e.Spawn) (*e.Spawn)();
     return entityCount - 1;
 }
 
@@ -51,7 +52,20 @@ void DrawEntities()
 void UpdateEntities(float fDeltaTime)
 {
     for (size_t i = 0; i < entityCount; i++)
+    {
+        if (Entities[i].IsAlive)
+        {
+            if (!(*Entities[i].IsAlive)())
+            {
+                if (Entities[i].Die)
+                    (*Entities[i].Die)();
+                RemoveEntity(i);
+                continue;
+            }
+        }
+
         if (Entities[i].Update) (*Entities[i].Update)(fDeltaTime);
+    }
 }
 
 void InputEntities(unsigned int msg, unsigned int wparam, long lparam)
