@@ -12,7 +12,7 @@ size_t entityCount(0);
 
 size_t AddEntity(Entity e)
 {
-    if (entityCount >= ENTITIES)
+    if (entityCount >= (ENTITIES - 1))
         return -1;
 
     Entities[entityCount] = e;
@@ -20,18 +20,18 @@ size_t AddEntity(Entity e)
     if (e.Spawn) (*e.Spawn)(e.data);
     printf("added entity, count: %d\n", entityCount);
 
-    return entityCount - 1;
+    return entityCount-1; //insert position
 }
 
 void RemoveEntity(size_t index)
 {
-    if (index > entityCount)
+    if (index >= entityCount)
         return;
 
     if (Entities[index].Die)
         (*Entities[index].Die)(Entities[index].data);
 
-    Entities[index] = Entities[entityCount];
+    Entities[index] = Entities[entityCount-1];
     entityCount--;
     printf("removed entity %d, entity count: %d\n", index, entityCount);
 }
@@ -58,20 +58,11 @@ void DrawEntities()
 void UpdateEntities(float fDeltaTime)
 {
     for (size_t i = 0; i < entityCount; i++)
-        if (Entities[i].Update) (*Entities[i].Update)(Entities[i].data, fDeltaTime);
-
-    for (size_t i = 0; i < entityCount; i++)
     {
-        if (Entities[i].IsAlive)
-        {
-            if (!(*Entities[i].IsAlive)(Entities[i].data))
-            {
-                RemoveEntity(i);
-                if( i > 0 ) i--;
-//                continue;
-            }
-        }
+        while(Entities[i].IsAlive && !((*Entities[i].IsAlive)(Entities[i].data)))
+            RemoveEntity(i);
 
+        if (Entities[i].Update) (*Entities[i].Update)(Entities[i].data, fDeltaTime);
     }
 }
 

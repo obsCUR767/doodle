@@ -90,11 +90,10 @@ void UpdatePlayer(void* data, float fDeltaTime)
             M2 rot;
             V2 axis;
             v2Zero(&axis);
-            axis.x = 10.0f;
+            axis.x = 50.0f;
             const float DISP = 0.05f;
             float fDispersion = ((float)rand() / RAND_MAX) * DISP - DISP * 0.5f;
             float fireAngle = fmodf(player->fAngle + fDispersion, 2.0f * fM_PI);
-//            printf("\t\t\tdisp %f, angle %f\n", fDispersion, bullet->fAngle);
 
             rotm2(fireAngle, &rot);
             mulv2xm2(&axis, &rot, &axis);

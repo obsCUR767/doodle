@@ -209,6 +209,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bandit.cpp" />
     <ClCompile Include="bench.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -219,6 +220,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bandit.h" />
     <ClInclude Include="bench.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="entity.h" />

@@ -19,6 +19,7 @@
 
 #include "entity.h"
 #include "player.h"
+#include "bandit.h"
 
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
@@ -138,24 +139,24 @@ void Draw( float fDeltaTime)
 //      }
 
 //(V2* buf, int n, float fAngle, V2* vPos, DWORD argb);
-   V2 vvpos(0.0f, 0.5f);
-   V2 vvpivot(0.0f, -0.5f);
-
-   DrawV2BufImAnglePos(star, 9, 5.0f * fAngle, &vvpos, -1);
-   DrawV2BufImAnglePivotPos(star, 9, 5.0f * fAngle, &vvpivot, &vvpos, -1);
-
-   vvpos.x = 1.0f; vvpos.y = 1.0f;
-   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, -1);
-
-   vvpos.x = 1.0f; vvpos.y = -1.0f;
-   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, XRGB(255, 0, 0));
-
-   vvpos.x = -1.0f; vvpos.y = -1.0f;
-   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 255, 0));
-
-   vvpos.x = -1.0f; vvpos.y = 1.0f;
-   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 0, 255));
-
+//   V2 vvpos(0.0f, 0.5f);
+//   V2 vvpivot(0.0f, -0.5f);
+//
+//   DrawV2BufImAnglePos(star, 9, 5.0f * fAngle, &vvpos, -1);
+//   DrawV2BufImAnglePivotPos(star, 9, 5.0f * fAngle, &vvpivot, &vvpos, -1);
+//
+//   vvpos.x = 1.0f; vvpos.y = 1.0f;
+//   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, -1);
+//
+//   vvpos.x = 1.0f; vvpos.y = -1.0f;
+//   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, XRGB(255, 0, 0));
+//
+//   vvpos.x = -1.0f; vvpos.y = -1.0f;
+//   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 255, 0));
+//
+//   vvpos.x = -1.0f; vvpos.y = 1.0f;
+//   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 0, 255));
+//
 
 //   vvpos.x = .0f; vvpos.y = .0f;
 //   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(255, 255, 0));
@@ -195,6 +196,11 @@ void Ding()
    srand((int)time(0));
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
     InitPlayerEntity();
+    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
     InitEntities();
     zoom = .2f;
     Proj();

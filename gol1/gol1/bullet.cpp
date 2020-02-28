@@ -11,7 +11,7 @@ static const float TAIL(-0.05f);
 static const float THIK(0.02f);
 static V2 bg[] = { { TIP, 0.0f }, { 0.0f, -THIK }, { TAIL, 0.0f }, { 0.0f, THIK }, { TIP, 0.0f } };
 
-static const float LIFESPAN(3.5f);
+static const float LIFESPAN(.5f);
 
 
 void InitBullet(void *data)
@@ -29,7 +29,8 @@ void UpdateBullet(void* data, float fDeltaTime)
     bullet = (Bullet*)data;
     V2 acc;
     v2Zero(&acc);
-    v2Add(&bullet->pos, v2Scale(&bullet->spd, fDeltaTime, &acc), &bullet->pos);
+    v2Add(&bullet->pos, v2Scale(&bullet->vel, fDeltaTime, &acc), &bullet->pos);
+
     bullet->fLifeTime += fDeltaTime;
     if (bullet->fLifeTime > bullet->fLifeSpan)
         bullet->bAlive = false;
@@ -39,7 +40,7 @@ void ResetBullet(void* data)
 {
     bullet = (Bullet*)data;
     v2Zero(&bullet->pos);
-    v2Zero(&bullet->spd);
+    v2Zero(&bullet->vel);
 
     bullet->fAngle = 0.0f;
     bullet->fSpeed = 0.0f;
@@ -68,10 +69,11 @@ void DieBullet(void* data)
     free(data);
 }
 
-void FireBullet(V2* pos, V2* speed, float fAngle)
+void FireBullet(V2* pos, V2* vel, float fAngle)
 {
     Entity bulletEntity;
     memset(&bulletEntity, 0, sizeof(Entity));
+
     void* p = malloc(sizeof(Bullet));
     memset(p, 0, sizeof(Bullet));
 
@@ -86,7 +88,7 @@ void FireBullet(V2* pos, V2* speed, float fAngle)
 
     bullet = (Bullet*)p;
     bullet->pos = *pos;
-    bullet->spd = *speed;
+    bullet->vel = *vel;
 
     bullet->fAngle = fAngle;
     bullet->bAlive = true;

@@ -5,7 +5,7 @@
 struct Bullet
 {
     V2 pos;
-    V2 spd;
+    V2 vel;
 
     float fAngle;
     float fSpeed;

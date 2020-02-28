@@ -5,6 +5,7 @@
 
 
 
+
 typedef void (*InitFunc)(void*);
 typedef bool (*IsAliveFunc)(void*);
 typedef void (*SpawnFunc)(void*);
