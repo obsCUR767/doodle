@@ -109,61 +109,11 @@ void Draw( float fDeltaTime)
     PreDraw();
     BitBlt( hBackBufferDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
-   SelectObject(hBackBufferDC, GetStockObject(DC_PEN));
+    SelectObject(hBackBufferDC, GetStockObject(DC_PEN));
 
-   fAngle = fmodf(fAngle + fSign * fDeltaTime * fTimeScale, 2.0f * (float)M_PI);
-   M3 rot(true);
-   rotm3(fAngle, &rot);
+    DrawEntities();
 
-//   int numX = 50, numY = 50;
-//   float sizeX = 0.5f, sizeY= 0.5f;
-//   for( int i = 0; i < numX; i++ )
-//      for( int j = 0; j < numY; j++ )
-//      {
-//         M3 rotL;
-//         float radiusFactor = sqrtf( ( i - numX * 0.5f )* ( i - numX * 0.5f ) + ( j - numY * 0.5f ) * ( j - numY * 0.5f ) );
-//         SetDCPenColor( hBackBufferDC, RGB( 
-//            (char)(255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle * 10.0f - 2.0f ) ) ), 
-//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + fAngle*0.5f * 10.0f ))),
-//            (char)( 255.0f * ( 0.5f + 0.5f * sinf( radiusFactor * 0.3f + -fAngle * 10.0f + 2.0f) ) ) ) );
-//
-//         rotm3( ( 14.0f - 2.0f * radiusFactor * fAngle ), &rotL );
-//         M3 gridM;
-//         V3 tran( sizeX * ( (float)i - numX * 0.5f) , sizeY * ( (float)j - numY * 0.5f) , 1.0f );
-//
-//         gridM.a20 = tran.x;
-//         gridM.a21 = tran.y;
-//         mul3x3( &rotL, &gridM, &gridM );
-//         mul3x3( &gridM, &rot, &gridM );
-//         DrawV2BufTranIm( sq, 5, &gridM );
-//      }
-
-//(V2* buf, int n, float fAngle, V2* vPos, DWORD argb);
-//   V2 vvpos(0.0f, 0.5f);
-//   V2 vvpivot(0.0f, -0.5f);
-//
-//   DrawV2BufImAnglePos(star, 9, 5.0f * fAngle, &vvpos, -1);
-//   DrawV2BufImAnglePivotPos(star, 9, 5.0f * fAngle, &vvpivot, &vvpos, -1);
-//
-//   vvpos.x = 1.0f; vvpos.y = 1.0f;
-//   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, -1);
-//
-//   vvpos.x = 1.0f; vvpos.y = -1.0f;
-//   DrawV2BufImAnglePos(star, 9, fAngle, &vvpos, XRGB(255, 0, 0));
-//
-//   vvpos.x = -1.0f; vvpos.y = -1.0f;
-//   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 255, 0));
-//
-//   vvpos.x = -1.0f; vvpos.y = 1.0f;
-//   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(0, 0, 255));
-//
-
-//   vvpos.x = .0f; vvpos.y = .0f;
-//   DrawV2BufImAnglePos(star, 9, 2.0f * fAngle, &vvpos, XRGB(255, 255, 0));
-
-   DrawEntities();
-
-   PostDraw();
+    PostDraw();
 }
 
 
@@ -196,19 +146,14 @@ void Ding()
    srand((int)time(0));
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
     InitPlayerEntity();
-    InitBanditEntity();
-    InitBanditEntity();
-    InitBanditEntity();
-    InitBanditEntity();
-    InitBanditEntity();
+//    InitBanditEntity();
+//    InitBanditEntity();
+//    InitBanditEntity();
+//    InitBanditEntity();
+//    InitBanditEntity();
     InitEntities();
     zoom = .2f;
     Proj();
-//    playerEntity.Init =   InitPlayer;
-//    playerEntity.Draw =   DrawPlayer;
-//    playerEntity.Update = UpdatePlayer;
-//    playerEntity.Input =  InputPlayer;
-//    playerEntity.Done =   0;
 }
 
 

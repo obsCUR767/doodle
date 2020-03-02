@@ -41,7 +41,6 @@ void Spawnbandit(void* data)
 void ActionsUpdate(void* data, float fDeltaTime)
 {
     bandit = (Bandit*)data;
-
     bandit->tickAction -= fDeltaTime;
     if (bandit->tickAction < 0.0f)
     {
@@ -57,10 +56,12 @@ void ActionsUpdate(void* data, float fDeltaTime)
         {
             bandit->tickAction = rand() % 100 / 31.0f;
             for (int i = 0; i < 4; bandit->vActions[i] = false, i++);
+            bandit->bActionFire = false;
         }
         else
         {
-            bandit->tickAction = rand() % 100 / 71.0f;
+            bandit->bActionFire = !(rand() % 15);
+            bandit->tickAction = rand() % 100 / 37.0f;
             bandit->vActions[rand() % 4] = true;
         }
     }
