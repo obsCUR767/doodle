@@ -18,16 +18,29 @@ static V2 star[] = {
 
 
 
+void ConfigBanditPhys(void* data)
+{
+    bandit = (Bandit*)data;
+    InitPhysModel(&bandit->physModel);
 
+    bandit->banditConfig.SPDSCALE = 1.1f;
+    bandit->banditConfig.ACCSCALE = 3.1f;
+
+    bandit->banditConfig.TURNSCALEACC = 3.0f;
+    bandit->banditConfig.TURNSCALE = 30.0f;
+
+    bandit->banditConfig.LIN_FRICTION_COEF = 0.6f;
+    bandit->banditConfig.ROT_FRICTION_COEF = 0.6f;
+    bandit->physModel.phConfig = bandit->banditConfig;
+
+}
 
 void Initbandit(void* data)
 {
     memset(data, 0, sizeof(Bandit));
     bandit = (Bandit*)data;
-    v2Zero(&bandit->pos);
-    v2Zero(&bandit->spd);
-    v2Zero(&bandit->accel);
 
+    ConfigBanditPhys(data);
 
     bandit->geom.v = star;
     bandit->geom.size = sizeof(star) / sizeof(V2);
@@ -69,45 +82,26 @@ void ActionsUpdate(void* data, float fDeltaTime)
 
 void Updatebandit(void* data, float fDeltaTime)
 {
-    ActionsUpdate(data, fDeltaTime);
     bandit = (Bandit*)data;
-    static const float SPDSCALE(1.1f);
-    static const float ACCSCALE(1.1f);
-
-    static const float TURNSCALEACC(1.0f);
-    static const float TURNSCALE(1.0f);
     static float tick;
     static float traceInterval(2.0f);
-    static const float FRICTION(-0.1f);
     bandit->fLifeTime += fDeltaTime;
-    V2 acc;
-    M2 rot;
 
+    ActionsUpdate(data, fDeltaTime);
+    PhysIn* phIn = &bandit->physModel.physIn;
+    phIn->bActionAccel = bandit->bActionAccel;
+    phIn->bActionBreak = bandit->bActionBreak;
+    phIn->bActionTurnLeft = bandit->bActionTurnLeft;
+    phIn->bActionTurnRight= bandit->bActionTurnRight;
 
-    bandit->fAngAccel = (bandit->bActionTurnLeft ? TURNSCALEACC : bandit->bActionTurnRight ? -TURNSCALEACC : 0.0f);
-    bandit->fAngSpeed += bandit->fAngAccel * fDeltaTime;
-//    bandit->fAngSpeed *= 0.999f;
-    bandit->fAngle += bandit->fAngSpeed * fDeltaTime;
-    bandit->fAngle = fmodf(bandit->fAngle, 2.0f * fM_PI);
+    UpdatePhysModel(&bandit->physModel, fDeltaTime);
 
-    rotm2(bandit->fAngle, &rot);
-    float friction;
-    if (v2Len(&bandit->spd) > 0.01f)
-        friction = FRICTION * fDeltaTime;
-    else
-        friction = 0.0f;
-    acc.y = 0.0f;
-    acc.x = (bandit->bActionAccel ? ACCSCALE : bandit->bActionBreak ? -ACCSCALE : friction);
-    mulv2xm2(&acc, &rot, &(bandit->accel));
-    v2Add(&bandit->spd, v2Scale(&bandit->accel, fDeltaTime, &acc), &bandit->spd);
-
-    v2Scale(&bandit->spd, 0.999f, &bandit->spd); //friction
-    v2Add(&bandit->pos, v2Scale(&bandit->spd, fDeltaTime, &acc), &bandit->pos);
+    PhysOut* phOut = &bandit->physModel.physOut;
 
     tick -= fDeltaTime;
     if (tick < 0.0f )
     {
-        printf("delta %f, %f\n", acc.x, acc.y);
+        printf("delta %f, %f\n", phOut->accel.x, phOut->accel.y);
         tick = traceInterval;
     }
 
@@ -124,13 +118,13 @@ void Updatebandit(void* data, float fDeltaTime)
             axis.x = 50.0f;
             const float DISP = 0.5f;
             float fDispersion = ((float)rand() / RAND_MAX) * DISP - DISP * 0.5f;
-            float fireAngle = fmodf(bandit->fAngle + fDispersion, 2.0f * fM_PI);
+            float fireAngle = fmodf(phOut->fAngle + fDispersion, 2.0f * fM_PI);
 
             rotm2(fireAngle, &rot);
             mulv2xm2(&axis, &rot, &axis);
-            v2Add(&axis, &bandit->spd, &axis);
+            v2Add(&axis, &phOut->spd, &axis);
 
-            FireBullet(&bandit->pos, &axis, bandit->fAngle);
+            FireBullet(&phOut->pos, &axis, phOut->fAngle);
         }
     }
 }
@@ -138,20 +132,15 @@ void Updatebandit(void* data, float fDeltaTime)
 void Resetbandit(void* data)
 {
     bandit = (Bandit*)data;
-    v2Zero(&bandit->pos);
-    v2Zero(&bandit->spd);
-    v2Zero(&bandit->accel);
-
-    bandit->fAngle = 0.0f;
-    bandit->fAngSpeed = 0.0f;
-    bandit->fAngAccel = 0.0f;
+    InitPhysModel(&bandit->physModel);
 }
 
 
 void Drawbandit(void* data)
 {
     bandit = (Bandit*)data;
-    DrawV2BufImAnglePos(bandit->geom.v, bandit->geom.size, bandit->fAngle, &bandit->pos, -1);
+    PhysOut* phOut = &bandit->physModel.physOut;
+    DrawV2BufImAnglePos(bandit->geom.v, bandit->geom.size, phOut->fAngle, &phOut->pos, -1);
 }
 
 

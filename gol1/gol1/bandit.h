@@ -1,18 +1,10 @@
 #pragma once
 #include "zmath.h"
 #include "entity.h"
+#include "phys.h"
 
 struct Bandit
 {
-    V2 pos;
-    V2 spd;
-    V2 accel;
-
-    float fAngle;
-    float fAngSpeed;
-    float fAngAccel;
-
-
     union
     {
         struct
@@ -31,6 +23,9 @@ struct Bandit
 
     prim2d geom;
     float fLifeTime;
+
+    PhysModel physModel;
+    PhysConfig banditConfig;
 };
 
 extern Entity banditEntity;

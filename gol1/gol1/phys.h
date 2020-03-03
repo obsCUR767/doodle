@@ -2,49 +2,83 @@
 #include "zmath.h"
 
 
+#define PHYS_CONFIG         float SPDSCALE;             \
+                            float ACCSCALE;             \
+                                                        \
+                            float TURNSCALEACC;         \
+                            float TURNSCALE;            \
+                                                        \
+                            float LIN_FRICTION_COEF;    \
+                            float ROT_FRICTION_COEF;    \
+
+
+#define PHYS_IN                 union                                                       \
+                                {                                                           \
+                                    struct                                                  \
+                                    {                                                       \
+                                        bool bActionAccel, bActionBreak;                    \
+                                        bool bActionTurnLeft, bActionTurnRight;             \
+                                    };                                                      \
+                                    bool vActions[4];                                       \
+                                };                                                          \
+
+
+#define PHYS_OUT    V2 pos;              \
+                    V2 spd;              \
+                    V2 accel;            \
+                                         \
+                    float fAngle;        \
+                    float fAngSpeed;     \
+                    float fAngAccel;     \
+
+
 struct PhysConfig
 {
-    float SPDSCALE;
-    float ACCSCALE;
-
-    float TURNSCALEACC;
-    float TURNSCALE;
-
-    float LIN_FRICTION_COEF;
-    float ROT_FRICTION_COEF;
+    PHYS_CONFIG;
 };
+
 
 struct PhysIn
 {
-    union
-    {
-        struct
-        {
-            bool bActionAccel, bActionBreak;
-            bool bActionTurnLeft, bActionTurnRight;
-        };
-        bool vActions[4];
-    };
+    PHYS_IN;
 };
 
 struct PhysOut
 {
-    V2 pos;
-    V2 spd;
-    V2 accel;
-
-    float fAngle;
-    float fAngSpeed;
-    float fAngAccel;
+    PHYS_OUT;
 };
 
 struct PhysModel
 {
-    PhysConfig phConfig;
-    PhysIn phInput;
-    PhysOut phOut;
+    union
+    {
+        PhysConfig phConfig;
+        struct
+        {
+            PHYS_CONFIG;
+        };
+    };
+
+    union
+    {
+        PhysIn physIn;
+        struct
+        {
+            PHYS_IN;
+        };
+    };
+    union
+    {
+        PhysOut physOut;
+        struct
+        {
+            PHYS_OUT;
+        };
+    };
+
     float fLifeTime;
 };
 
-void UpdatePhys(void* data, float fDeltaTime);
+void UpdatePhysModel(void* data, float fDeltaTime);
 
+void InitPhysModel(void* data);

@@ -1,26 +1,21 @@
 #pragma once
 #include "zmath.h"
 #include "entity.h"
+#include "phys.h"
 
 struct Player
 {
-    V2 pos;
-    V2 spd;
-    V2 accel;
-
-    float fAngle;
-    float fAngSpeed;
-    float fAngAccel;
 
     bool bInputAccel, bInputBreak;
     bool bInputTurnLeft, bInputTurnRight;
     bool bInputFire;
 
-
     bool bFinger;
 
     prim2d geom;
     float fLifeTime;
+    PhysModel physModel;
+    PhysConfig playerConfig;
 };
 
 extern Player* player;

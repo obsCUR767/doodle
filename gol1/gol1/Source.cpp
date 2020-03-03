@@ -146,11 +146,11 @@ void Ding()
    srand((int)time(0));
     wheel1= GenWheel( 25, 0.1f, &wheel1Size );
     InitPlayerEntity();
-//    InitBanditEntity();
-//    InitBanditEntity();
-//    InitBanditEntity();
-//    InitBanditEntity();
-//    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
+    InitBanditEntity();
     InitEntities();
     zoom = .2f;
     Proj();
