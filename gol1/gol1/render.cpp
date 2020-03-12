@@ -160,7 +160,8 @@ void DrawV2BufIm(const V2* buf, int n)
     }
 
     numLines += n;
-    Polyline(hBackBufferDC, pb, n);
+    Polygon(hBackBufferDC, pb, n);
+//    Polyline(hBackBufferDC, pb, n);
 
 }
 

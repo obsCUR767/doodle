@@ -36,8 +36,8 @@ void InitPlayer(void* data)
     player->playerConfig.SPDSCALE = 1.1f;
     player->playerConfig.ACCSCALE = 3.1f;
 
-    player->playerConfig.TURNSCALEACC = 3.0f;
-    player->playerConfig.TURNSCALE    = 30.0f;
+    player->playerConfig.TURNSCALEACC = 2.0f;
+    player->playerConfig.TURNSCALE    = 10.0f;
 
     player->playerConfig.LIN_FRICTION_COEF = 0.6f;
     player->playerConfig.ROT_FRICTION_COEF = 0.6f;
@@ -48,6 +48,7 @@ void InitPlayer(void* data)
     player->geom.size = sizeof(s1) / sizeof(V2);
     player->fLifeTime = 0.0f;
     player->bFinger = false;
+    player->bShiftPressed = false;
 }
 
 void SpawnPlayer(void* data)
@@ -106,8 +107,9 @@ void UpdatePlayer(void* data, float fDeltaTime)
 
 void ResetPlayer(void* data)
 {
+    printf("reset player!\n");
     player = (Player*)data;
-    InitPhysModel(&player->physModel);
+    InitPlayer(data);
 }
 
 
@@ -143,6 +145,9 @@ void InputPlayer(void* data, unsigned int msg, unsigned int wparam, long lparam)
         {
             player->bInputFire = true;
         }
+
+        if (wparam == VK_SHIFT)
+            player->bShiftPressed = true;
     };
 
     if (msg == WM_KEYUP)
@@ -154,16 +159,19 @@ void InputPlayer(void* data, unsigned int msg, unsigned int wparam, long lparam)
             player->bInputAccel = false;
         if (wparam == 'S')
             player->bInputBreak = false;
-
         if (wparam == 'A')
             player->bInputTurnLeft = false;
         if (wparam == 'D')
             player->bInputTurnRight = false;
 
-        if (wparam == 'X')
+        if (wparam == VK_SHIFT)
+            player->bShiftPressed = false;
+
+        if (wparam == 'X' && player->bShiftPressed)
         {
-            ResetPlayer(data);
+                ResetPlayer(data);
         }
+
 
         if (wparam == VK_SPACE)
         {

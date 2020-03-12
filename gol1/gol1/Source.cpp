@@ -1,11 +1,15 @@
 #define _WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include <stdio.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 #include "tchar.h"
 #include "windows.h"
@@ -71,11 +75,9 @@ size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 
 
 M3 scaleMatRes;
 
-V2* sproket1;
-size_t sproket1Size;
 
-V2* wheel1;
-size_t wheel1Size;
+//V2* wheel1;
+//size_t wheel1Size;
 
 V3 mousePosV3;
 
@@ -109,6 +111,8 @@ void Draw( float fDeltaTime)
     PreDraw();
     BitBlt( hBackBufferDC, 0, 0, clRSize.x, clRSize.y, hBackDC, 0, 0, SRCCOPY );
     
+    SelectObject(hBackBufferDC, GetStockObject(DC_BRUSH));
+    SetDCBrushColor(hBackBufferDC, RGB(255, 128, 0));
     SelectObject(hBackBufferDC, GetStockObject(DC_PEN));
 
     DrawEntities();
@@ -137,28 +141,36 @@ void Loop(HWND hwnd)
 	    printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, getNumLines() );
 	    fTraceTick = 0.0;
     }
-
+    if (fDeltaTime < 16)
+        Sleep(16 - fDeltaTime);
 }
 
 
 void Ding()
 {
-   srand((int)time(0));
-    wheel1= GenWheel( 25, 0.1f, &wheel1Size );
+    srand((int)time(0));
+
+    for (int i = 0; i < 3000; i++)
+    {
+        V3 v;
+        v.x = (i % 10);
+        v.y = (i / 10);
+        v.z = fmodf(i, fM_2PI);
+        SetBanditInitState(v);
+        InitBanditEntity(0);
+    }
+
     InitPlayerEntity();
-    InitBanditEntity();
-    InitBanditEntity();
-    InitBanditEntity();
-    InitBanditEntity();
-    InitBanditEntity();
     InitEntities();
-    zoom = .2f;
+
+    zoom = .05f;
     Proj();
 }
 
 
 void main(void)
 {
+    _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	MSG msg;
 	QueryPerformanceCounter(&first);
    last = first;
@@ -197,11 +209,9 @@ void main(void)
 		}
 	} while (msg.message != WM_QUIT);
 
-   if( sproket1 ) { free( sproket1 ); sproket1 = NULL; };
-   if( wheel1 ) { free( wheel1 ); wheel1 = NULL; };
-
    DoneRender();
    DoneEntities();
+   _CrtDumpMemoryLeaks();
 }
 
 
@@ -264,6 +274,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	if (msg == WM_DESTROY || (msg == WM_KEYUP && wParam == VK_ESCAPE))
 	{
+
 		PostQuitMessage (0);
 		return 0;
 	};

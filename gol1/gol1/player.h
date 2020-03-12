@@ -11,6 +11,7 @@ struct Player
     bool bInputFire;
 
     bool bFinger;
+    bool bShiftPressed;
 
     prim2d geom;
     float fLifeTime;

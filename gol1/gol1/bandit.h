@@ -29,4 +29,5 @@ struct Bandit
 };
 
 extern Entity banditEntity;
-void InitBanditEntity();
+void InitBanditEntity(void* data);
+void SetBanditInitState(const V3 _in);

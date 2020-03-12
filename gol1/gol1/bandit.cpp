@@ -15,7 +15,13 @@ static V2 star[] = {
 { 2.0f * TIP, 0.0F }
 };
 
-
+V3 banditInitState;
+void SetBanditInitState(const V3 _in)
+{
+    banditInitState.x = _in.x;
+    banditInitState.y = _in.y;
+    banditInitState.z = _in.z;
+}
 
 
 void ConfigBanditPhys(void* data)
@@ -24,13 +30,13 @@ void ConfigBanditPhys(void* data)
     InitPhysModel(&bandit->physModel);
 
     bandit->banditConfig.SPDSCALE = 1.1f;
-    bandit->banditConfig.ACCSCALE = 3.1f;
+    bandit->banditConfig.ACCSCALE = 2.1f;
 
     bandit->banditConfig.TURNSCALEACC = 3.0f;
     bandit->banditConfig.TURNSCALE = 30.0f;
 
-    bandit->banditConfig.LIN_FRICTION_COEF = 0.6f;
-    bandit->banditConfig.ROT_FRICTION_COEF = 0.6f;
+    bandit->banditConfig.LIN_FRICTION_COEF = 1.6f;
+    bandit->banditConfig.ROT_FRICTION_COEF = .6f;
     bandit->physModel.phConfig = bandit->banditConfig;
 
 }
@@ -42,9 +48,15 @@ void Initbandit(void* data)
 
     ConfigBanditPhys(data);
 
+    float f = frand() * fM_2PI;
+    float r = frand() * 3.0f + 3.0f;
+    bandit->physModel.physOut.pos = { r * cosf( f ), r * sinf( f ) };
+    bandit->physModel.physOut.fAngle = f;
+
     bandit->geom.v = star;
     bandit->geom.size = sizeof(star) / sizeof(V2);
     bandit->fLifeTime = 0.0f;
+
 }
 
 void Spawnbandit(void* data)
@@ -67,13 +79,13 @@ void ActionsUpdate(void* data, float fDeltaTime)
 
         if (bActionActive)
         {
-            bandit->tickAction = rand() % 100 / 31.0f;
+            bandit->tickAction = rand() % 50 / 31.0f;
             for (int i = 0; i < 4; bandit->vActions[i] = false, i++);
             bandit->bActionFire = false;
         }
         else
         {
-            bandit->bActionFire = !(rand() % 15);
+            bandit->bActionFire = !(rand() % 115);
             bandit->tickAction = rand() % 100 / 37.0f;
             bandit->vActions[rand() % 4] = true;
         }
@@ -82,6 +94,7 @@ void ActionsUpdate(void* data, float fDeltaTime)
 
 void Updatebandit(void* data, float fDeltaTime)
 {
+    fDeltaTime *= 10.0f;
     bandit = (Bandit*)data;
     static float tick;
     static float traceInterval(2.0f);
@@ -101,7 +114,7 @@ void Updatebandit(void* data, float fDeltaTime)
     tick -= fDeltaTime;
     if (tick < 0.0f )
     {
-        printf("delta %f, %f\n", phOut->accel.x, phOut->accel.y);
+//        printf("delta %f, %f\n", phOut->accel.x, phOut->accel.y);
         tick = traceInterval;
     }
 
@@ -144,10 +157,11 @@ void Drawbandit(void* data)
 }
 
 
-void InitBanditEntity()
+void InitBanditEntity(void* _in)
 {
     void* p = malloc(sizeof(Bandit));
     banditEntity.Init = Initbandit;
+    banditEntity.Spawn = Spawnbandit;
     banditEntity.Done = 0;
     banditEntity.Update = Updatebandit;
     banditEntity.Draw = Drawbandit;

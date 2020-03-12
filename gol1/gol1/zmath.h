@@ -17,7 +17,9 @@
 #define fM_2_SQRTPI 1.12837916709551257390f   // 2/sqrt(pi)
 #define fM_SQRT2    1.41421356237309504880f   // sqrt(2)
 #define fM_SQRT1_2  0.707106781186547524401f  // 1/sqrt(2)
+#define fM_2PI      2.0f * fM_PI              // 2*pi   //delamine
 
 
+#define frand( ) (rand() / (float)RAND_MAX)
 #define clamp( x, a, b ) ( (x) = ((x) < (a) ? (a) : ((x) >(b) ? (b) : (x) )))
 #define ratio( x, a, b ) ( ( clamp( x, a, b ) - (a) ) / ((b)-(a)))

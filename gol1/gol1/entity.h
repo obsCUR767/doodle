@@ -1,7 +1,7 @@
 #pragma once
 
 #include "zmath.h"
-#define ENTITIES (1024)
+#define ENTITIES (1024 * 32)
 
 
 
@@ -23,6 +23,9 @@ struct prim2d
     V2* v;
     size_t size;
 };
+
+
+
 
 struct Entity
 {

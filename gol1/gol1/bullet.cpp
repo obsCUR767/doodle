@@ -11,7 +11,7 @@ static const float TAIL(-0.05f);
 static const float THIK(0.02f);
 static V2 bg[] = { { TIP, 0.0f }, { 0.0f, -THIK }, { TAIL, 0.0f }, { 0.0f, THIK }, { TIP, 0.0f } };
 
-static const float LIFESPAN(1.5f);
+static const float LIFESPAN(.5f);
 
 
 void InitBullet(void *data)
