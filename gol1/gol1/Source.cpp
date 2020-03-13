@@ -36,7 +36,7 @@ float fAngle = 0.0f;
 
 LARGE_INTEGER first, freq, last, curr;
 float fTraceTick = 0.0f;
-bool bInit = false;
+bool banditInit = false;
 
 
 
@@ -123,26 +123,32 @@ void Draw( float fDeltaTime)
 
 void Loop(HWND hwnd)
 {
-    last = curr;
-    QueryPerformanceCounter(&curr);
-
-    float fLifeTime = (curr.QuadPart - first.QuadPart) / (float)freq.QuadPart;
-    float fDeltaTime = (curr.QuadPart - last.QuadPart) / (float)freq.QuadPart;
-    static float fSmoothDelta = fDeltaTime;  //filtered
-    fSmoothDelta = (9.0f * fSmoothDelta + fDeltaTime) * 0.1f;
+    static float fDeltaTime = 0.0f;
+    static float fLifeTime = 0.0f;
+    TICK(tick);
 
     Draw( fDeltaTime );
 
     UpdateEntities(fDeltaTime);
 
-    fTraceTick += fDeltaTime;
-    if (fTraceTick > 1.0)
+    TOCK_QUIET(tick, tock, delta);
+
+    static const float FRAME_DURATION = 1000.0f / 60.0f;
+    DWORD ms = DWORD(FRAME_DURATION - ( delta * 1000.0f ));
+    if ((delta * 1000.0f) < FRAME_DURATION)
+        Sleep(ms);
+
+    TOCK_QUIET(tick, tockFrame, deltaFrame);
+    fDeltaTime = deltaFrame;
+
+    fTraceTick -= deltaFrame;
+    if (fTraceTick < 0.0f )
     {
-	    printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, fDeltaTime * 1000.0, 1.0 / fSmoothDelta, getNumLines() );
-	    fTraceTick = 0.0;
+        //printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d\n", fLifeTime, delta * 1000.0, 1.0 / deltaFrame, getNumLines());
+        printf("lifeTime: %.2f, delta: %.2f msec, fps: %.2f, numLines: %d, sleep: %d\n", fLifeTime, delta * 1000.0, 1.0 / deltaFrame, getNumLines(), ms );
+        fTraceTick = 1.0f;
     }
-    if (fDeltaTime < 16)
-        Sleep(16 - fDeltaTime);
+
 }
 
 
@@ -150,20 +156,23 @@ void Ding()
 {
     srand((int)time(0));
 
-    for (int i = 0; i < 3000; i++)
+    int BANDITZ = 9;
+    int Q = (size_t)sqrtf((float)BANDITZ);
+
+    for (int i = 0; i < BANDITZ; i++)
     {
-        V3 v;
-        v.x = (i % 10);
-        v.y = (i / 10);
-        v.z = fmodf(i, fM_2PI);
-        SetBanditInitState(v);
-        InitBanditEntity(0);
+        BanditInit banditInit;
+
+        banditInit.pos.x = float((i % Q) - Q/2);
+        banditInit.pos.y = float((i / Q) - Q/2);
+        banditInit.fAngle = fmodf(float(i), fM_2PI);
+        InitBanditEntity(&banditInit);
     }
 
     InitPlayerEntity();
     InitEntities();
 
-    zoom = .05f;
+    zoom = .1f;
     Proj();
 }
 
@@ -215,7 +224,7 @@ void main(void)
 }
 
 
-void Aquire(HWND hwnd, bool bInit = false )
+void Aquire(HWND hwnd, bool banditInit = false )
 {
 	GetClientRect(hwnd, &clRect);
 	clRSize.x = clRect.right - clRect.left;

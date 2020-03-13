@@ -15,43 +15,30 @@ static V2 star[] = {
 { 2.0f * TIP, 0.0F }
 };
 
-V3 banditInitState;
-void SetBanditInitState(const V3 _in)
-{
-    banditInitState.x = _in.x;
-    banditInitState.y = _in.y;
-    banditInitState.z = _in.z;
-}
-
 
 void ConfigBanditPhys(void* data)
 {
     bandit = (Bandit*)data;
     InitPhysModel(&bandit->physModel);
 
-    bandit->banditConfig.SPDSCALE = 1.1f;
+    bandit->banditConfig.SPDSCALE = 5.1f;
     bandit->banditConfig.ACCSCALE = 2.1f;
 
-    bandit->banditConfig.TURNSCALEACC = 3.0f;
-    bandit->banditConfig.TURNSCALE = 30.0f;
+    bandit->banditConfig.TURNSCALEACC = 1.0f;
+    bandit->banditConfig.TURNSCALE = 5.0f;
 
     bandit->banditConfig.LIN_FRICTION_COEF = 1.6f;
-    bandit->banditConfig.ROT_FRICTION_COEF = .6f;
+    bandit->banditConfig.ROT_FRICTION_COEF = 1.6f;
     bandit->physModel.phConfig = bandit->banditConfig;
-
 }
 
 void Initbandit(void* data)
 {
-    memset(data, 0, sizeof(Bandit));
     bandit = (Bandit*)data;
 
     ConfigBanditPhys(data);
-
-    float f = frand() * fM_2PI;
-    float r = frand() * 3.0f + 3.0f;
-    bandit->physModel.physOut.pos = { r * cosf( f ), r * sinf( f ) };
-    bandit->physModel.physOut.fAngle = f;
+    bandit->physModel.physOut.pos = bandit->init.pos;
+    bandit->physModel.physOut.fAngle = bandit->init.fAngle;
 
     bandit->geom.v = star;
     bandit->geom.size = sizeof(star) / sizeof(V2);
@@ -85,7 +72,7 @@ void ActionsUpdate(void* data, float fDeltaTime)
         }
         else
         {
-            bandit->bActionFire = !(rand() % 115);
+            bandit->bActionFire = !(rand() % 1115);
             bandit->tickAction = rand() % 100 / 37.0f;
             bandit->vActions[rand() % 4] = true;
         }
@@ -94,7 +81,6 @@ void ActionsUpdate(void* data, float fDeltaTime)
 
 void Updatebandit(void* data, float fDeltaTime)
 {
-    fDeltaTime *= 10.0f;
     bandit = (Bandit*)data;
     static float tick;
     static float traceInterval(2.0f);
@@ -111,12 +97,12 @@ void Updatebandit(void* data, float fDeltaTime)
 
     PhysOut* phOut = &bandit->physModel.physOut;
 
-    tick -= fDeltaTime;
-    if (tick < 0.0f )
-    {
-//        printf("delta %f, %f\n", phOut->accel.x, phOut->accel.y);
-        tick = traceInterval;
-    }
+//    tick -= fDeltaTime;
+//    if (tick < 0.0f )
+//    {
+////        printf("delta %f, %f\n", phOut->accel.x, phOut->accel.y);
+//        tick = traceInterval;
+//    }
 
     if (bandit->bActionFire)
     {
@@ -160,6 +146,9 @@ void Drawbandit(void* data)
 void InitBanditEntity(void* _in)
 {
     void* p = malloc(sizeof(Bandit));
+    memset(p, 0, sizeof(Bandit));
+    bandit = (Bandit*)p;
+    bandit->init = *(BanditInit*)_in;
     banditEntity.Init = Initbandit;
     banditEntity.Spawn = Spawnbandit;
     banditEntity.Done = 0;

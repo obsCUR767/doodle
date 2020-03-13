@@ -68,8 +68,8 @@ void flushvb()
 void ToWorld(const LPPOINT p, V3* out)
 {
     V3 v;
-    v.x = p->x;
-    v.y = p->y;
+    v.x = (float)p->x;
+    v.y = (float)p->y;
     v.z = 1.0f;
 
     mulv3xm3(mulv3xm3(&v, &screenProjInv, &v), &mWorldInv, out);
@@ -79,8 +79,8 @@ void ToScreen(const V3* p, LPPOINT out)
 {
     V3 v;
     mulv3xm3(mulv3xm3(p, &mWorld, &v), &screenProj, &v);
-    out->x = v.x;
-    out->y = v.y;
+    out->x = (LONG)v.x;
+    out->y = (LONG)v.y;
 }
 
 

@@ -3,6 +3,12 @@
 #include "entity.h"
 #include "phys.h"
 
+struct BanditInit
+{
+    V2 pos;
+    float fAngle;
+};
+
 struct Bandit
 {
     union
@@ -14,7 +20,7 @@ struct Bandit
         };
         bool vActions[4];
     };
-
+    BanditInit init;
     bool bActionFire;
 
     bool bActionActive;
