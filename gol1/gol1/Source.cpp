@@ -73,7 +73,6 @@ V3 cubeVerts[] = {
 
 size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 4 , 1, 5 , 2, 6 , 3, 7 };
 
-M3 scaleMatRes;
 
 
 //V2* wheel1;
@@ -135,8 +134,8 @@ void Loop(HWND hwnd)
 
     static const float FRAME_DURATION = 1000.0f / 60.0f;
     DWORD ms = DWORD(FRAME_DURATION - ( delta * 1000.0f ));
-    if ((delta * 1000.0f) < FRAME_DURATION)
-        Sleep(ms);
+    //if ((delta * 1000.0f) < FRAME_DURATION)
+    //    Sleep(ms);
 
     TOCK_QUIET(tick, tockFrame, deltaFrame);
     fDeltaTime = deltaFrame;
@@ -156,7 +155,7 @@ void Ding()
 {
     srand((int)time(0));
 
-    int BANDITZ = 9;
+    int BANDITZ = 25;
     int Q = (size_t)sqrtf((float)BANDITZ);
 
     for (int i = 0; i < BANDITZ; i++)
@@ -308,11 +307,8 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
       if( wParam == 'Z' )
       {
-        screenProj.initM3();
-        screenProjInv.initM3();
-        mWorld.initM3();
-        mWorldInv.initM3();
-        Aquire( hwnd );
+          ResetWorldScreenMat();
+          Aquire( hwnd );
       }
     }
 
@@ -380,7 +376,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             V3 delta( leftButtonDragCoordWorld.x - leftButtonDragStartWorld.x, leftButtonDragCoordWorld.y - leftButtonDragStartWorld.y, 0.0f );
 
-            M3 tran;
+            M3 tran; identM3(&tran);
             v3Add(&tran.Z, &delta, &tran.Z);
             mul3x3(&tran, &mWorld, &mWorld);
             invm3(&mWorld, &mWorldInv);

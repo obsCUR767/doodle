@@ -19,24 +19,8 @@ const float IDEN4[ ] = {    1.0f, 0.0f, 0.0f, 0.0f,
 
 union M2
 {                             
-    M2( float _a00, float _a01,
-        float _a10, float _a11 ) : 
-        a00( _a00 ), a01( _a01 ),
-        a10( _a10 ), a11( _a11 ) {}
-
-        M2( bool bInit = true ) { if( bInit ) initM2( ); }
+    M2() {};
     static const int CARD = 2;
-    inline void initM2( ) { memcpy( a, IDEN2, CARD * CARD * sizeof( float ) ); }
-    void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
-    void printMat( )
-    {
-        for( int lin = 0; lin < CARD; lin++ )
-        {
-            for( int col = 0; col < CARD; col++ )
-                printf( "%f ", m[col][lin] );
-            printf( "\n" );
-        }
-    }
 
     float m[CARD][CARD];
     struct
@@ -54,29 +38,9 @@ union M2
 
 union M3
 {
-    M3( float _a00, float _a01, float _a02, 
-        float _a10, float _a11, float _a12,
-        float _a20, float _a21, float _a22 ) :
-        a00( _a00 ), a01( _a01 ), a02( _a02 ),
-        a10( _a10 ), a11( _a11 ), a12( _a12 ),
-        a20( _a20 ), a21( _a21 ), a22( _a22 ) {}
+    M3() {};
 
-
-    M3( bool bInit = true ) { if( bInit ) initM3( ); }
     static const size_t CARD = 3;
-    void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
-    inline void initM3( ) { memcpy( a, IDEN3, CARD * CARD * sizeof( float ) ); }
-
-    void printMat( )
-    {
-        for( int lin = 0; lin < CARD; lin++ )
-        {
-            for( int col = 0; col < CARD; col++ )
-                printf( "%f ", m[lin][col] );
-            printf( "\n" );
-        }
-    }
-
     float m[CARD][CARD];
     struct
     {
@@ -95,29 +59,9 @@ union M3
 
 union M4
 {
-    M4( float _a00, float _a01, float _a02, float _a03,
-        float _a10, float _a11, float _a12, float _a13,
-        float _a20, float _a21, float _a22, float _a23,
-        float _a30, float _a31, float _a32, float _a33 ) :
-        a00( _a00 ), a01( _a01 ), a02( _a02 ), a03( _a03 ),
-        a10( _a10 ), a11( _a11 ), a12( _a12 ), a13( _a13 ),
-        a20( _a20 ), a21( _a21 ), a22( _a22 ), a23( _a23 ),
-        a30( _a30 ), a31( _a31 ), a32( _a32 ), a33( _a33 ) {}
-    M4( bool bInit = true ) { if( bInit ) initM4( ); }
+    M4() {};
 
     static const size_t CARD = 4;
-    inline void initM4( ) { memcpy( a, IDEN4, CARD * CARD * sizeof( float) ); }
-    void tran( ) { for( int i = 1; i < CARD; i++ ) for( int j = i; j < CARD; j++ ) m[i][j] = m[j][i]; }
-    void printMat( )
-    {
-        for( int lin = 0; lin < CARD; lin++ )
-        {
-            for( int col = 0; col < CARD; col++ )
-                printf( "%f ", m[lin][col] );
-            printf( "\n" );
-        }
-    }
-
     float m[CARD][CARD];
     struct
     {
@@ -135,6 +79,33 @@ union M4
     };
     float a[CARD * CARD];
 };
+
+
+
+
+#ifndef MATRIX_FUNC_DEFINITION
+#define MATRIX_FUNC_DEFINITION(p)    \
+    inline void identM##p(M##p* res) { memcpy(res->a, IDEN##p, M##p::CARD * M##p::CARD * sizeof(float)); }                                             \
+    inline void tranM##p(M##p* res) { for (int i = 1; i < M##p::CARD; i++) for (int j = i; j < M##p::CARD; j++) res->m[i][j] = res->m[j][i]; }          \
+    inline void printM##p(const M##p* _mat)             \
+    {                                                   \
+        for (int lin = 0; lin < M##p::CARD; lin++)            \
+        {                                               \
+            for (int col = 0; col < M##p::CARD; col++)        \
+                printf("%f ", _mat->m[lin][col]);             \
+            printf("\n");                               \
+        }                                               \
+    }
+
+#endif //MATRIX_FUNC_DEFINITION
+
+
+MATRIX_FUNC_DEFINITION(2);
+MATRIX_FUNC_DEFINITION(3);
+MATRIX_FUNC_DEFINITION(4);
+
+
+
 
 inline M2* rotm2( float fAngle, M2* res )
 {
@@ -213,6 +184,7 @@ inline M4* scalem4( const V4* s, M4* res ) { res->a00 = s->x; res->a11 = s->y; r
 
 inline M2* mul2x2( const M2* a, const M2* b, M2* res )
 {
+//    M2 zz;
    M2 la, lb;
    const M2 *ta( ( a == res ) ? ( la = *a, &la ) : a );
    const M2 *tb( ( b == res ) ? ( lb = *b, &lb ) : b );

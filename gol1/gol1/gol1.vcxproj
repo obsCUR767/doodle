@@ -267,6 +267,7 @@
     <ClCompile Include="bandit.cpp" />
     <ClCompile Include="bench.cpp" />
     <ClCompile Include="bullet.cpp" />
+    <ClCompile Include="coll.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityEx.cpp" />
     <ClCompile Include="phys.cpp" />
@@ -280,6 +281,7 @@
     <ClInclude Include="bandit.h" />
     <ClInclude Include="bench.h" />
     <ClInclude Include="bullet.h" />
+    <ClInclude Include="coll.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="EntityEx.h" />
     <ClInclude Include="mat.h" />

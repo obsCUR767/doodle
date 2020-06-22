@@ -33,11 +33,21 @@ void InitPlayer(void* data)
     player = (Player*)data;
     InitPhysModel(&player->physModel);
     
-    player->playerConfig.SPDSCALE = 1.1f;
-    player->playerConfig.ACCSCALE = 3.1f;
+    player->playerConfig.MASS = 1.1f;
+    player->playerConfig.THRUST = 3.1f;
 
-    player->playerConfig.TURNSCALEACC = 2.0f;
-    player->playerConfig.TURNSCALE    = 10.0f;
+/*
+acc = x/t^2
+f = m * acc
+
+ang acc = ang/time^2
+t = mIn * ang_acc
+
+
+*/
+
+    player->playerConfig.YAWINERTIA = 2.0f;
+    player->playerConfig.YAWTORQUE = 10.0f;
 
     player->playerConfig.LIN_FRICTION_COEF = 0.6f;
     player->playerConfig.ROT_FRICTION_COEF = 0.6f;
@@ -51,6 +61,15 @@ void InitPlayer(void* data)
     player->bShiftPressed = false;
 }
 
+void DonePlayer(void* data)
+{
+    if (data)
+    {
+        free(data);
+        data = NULL;
+    }
+}
+
 void SpawnPlayer(void* data)
 {
 }
@@ -62,7 +81,7 @@ void UpdatePlayer(void* data, float fDeltaTime)
     static float traceInterval(0.1f);
     player->fLifeTime += fDeltaTime;
     V2 acc;
-    M2 rot;
+    M2 rot; identM2(&rot);
 
     PhysIn* phIn = &player->physModel.physIn;
     phIn->bActionAccel = player->bInputAccel;
@@ -81,7 +100,7 @@ void UpdatePlayer(void* data, float fDeltaTime)
         if (fireTick < 0.0f)
         {
             fireTick = 0.1f;
-            M2 rot;
+            M2 rot; identM2(&rot);
             V2 axis;
             v2Zero(&axis);
             axis.x = 50.0f;
@@ -187,7 +206,7 @@ void InitPlayerEntity()
 {
     void* p = malloc(sizeof(Player));
     playerEntity.Init = InitPlayer;
-    playerEntity.Done = 0;
+    playerEntity.Done = DonePlayer;
     playerEntity.Update = UpdatePlayer;
     playerEntity.Draw = DrawPlayer;
     playerEntity.Input = InputPlayer;

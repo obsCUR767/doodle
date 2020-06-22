@@ -21,6 +21,7 @@ extern HDC hBackDC;
 
 void PreDraw();
 void PostDraw();
+void ResetWorldScreenMat();
 void InitRender();
 size_t getNumLines();
 void flushvb();

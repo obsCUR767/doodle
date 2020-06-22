@@ -30,6 +30,8 @@ struct Bandit
     prim2d geom;
     float fLifeTime;
 
+    float fSize;
+
     PhysModel physModel;
     PhysConfig banditConfig;
 };

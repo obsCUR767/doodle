@@ -2,11 +2,23 @@
 #include "zmath.h"
 
 
-#define PHYS_CONFIG         float SPDSCALE;             \
-                            float ACCSCALE;             \
+/*
+
+F = m * a
+a = F / m
+m = F / a
+
+
+
+
+*/
+
+
+#define PHYS_CONFIG         float MASS;             \
+                            float THRUST;             \
                                                         \
-                            float TURNSCALEACC;         \
-                            float TURNSCALE;            \
+                            float YAWINERTIA;            \
+                            float YAWTORQUE;         \
                                                         \
                             float LIN_FRICTION_COEF;    \
                             float ROT_FRICTION_COEF;    \

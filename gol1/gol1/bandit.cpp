@@ -3,9 +3,11 @@
 #include "windows.h"
 #include "render.h"
 #include "bullet.h"
+#include "coll.h"
 
 
 Bandit* bandit;
+CollData* collData;
 Entity banditEntity;
 static const float TIP(0.05f);
 static const float VAL(0.01f);
@@ -20,12 +22,12 @@ void ConfigBanditPhys(void* data)
 {
     bandit = (Bandit*)data;
     InitPhysModel(&bandit->physModel);
+    bandit->fSize = 0.05f;
+    bandit->banditConfig.MASS = 5.1f;
+    bandit->banditConfig.THRUST = 10.1f;
 
-    bandit->banditConfig.SPDSCALE = 5.1f;
-    bandit->banditConfig.ACCSCALE = 2.1f;
-
-    bandit->banditConfig.TURNSCALEACC = 1.0f;
-    bandit->banditConfig.TURNSCALE = 5.0f;
+    bandit->banditConfig.YAWINERTIA = 1.0f;
+    bandit->banditConfig.YAWTORQUE = 5.0f;
 
     bandit->banditConfig.LIN_FRICTION_COEF = 1.6f;
     bandit->banditConfig.ROT_FRICTION_COEF = 1.6f;
@@ -45,6 +47,16 @@ void Initbandit(void* data)
     bandit->fLifeTime = 0.0f;
 
 }
+
+void DoneBandit(void* data)
+{
+    if (data)
+    {
+        free(data);
+        data = NULL;
+    }
+}
+
 
 void Spawnbandit(void* data)
 {
@@ -111,7 +123,7 @@ void Updatebandit(void* data, float fDeltaTime)
         if (fireTick < 0.0f)
         {
             fireTick = 0.1f;
-            M2 rot;
+            M2 rot; identM2(&rot);
             V2 axis;
             v2Zero(&axis);
             axis.x = 50.0f;
@@ -142,6 +154,21 @@ void Drawbandit(void* data)
     DrawV2BufImAnglePos(bandit->geom.v, bandit->geom.size, phOut->fAngle, &phOut->pos, -1);
 }
 
+bool GetBanditCollData(void* data, void* _out)
+{
+    bandit = (Bandit*)data;
+    PhysOut* phOut = &bandit->physModel.physOut;
+
+    collData = (CollData*)_out;
+
+    collData->fCollRadius = bandit->fSize;
+    collData->fMass = bandit->banditConfig.MASS;
+    collData->fAngle = phOut->fAngle;
+    collData->pos = phOut->pos;
+    collData->speed = phOut->spd;
+    return true;
+}
+
 
 void InitBanditEntity(void* _in)
 {
@@ -151,10 +178,11 @@ void InitBanditEntity(void* _in)
     bandit->init = *(BanditInit*)_in;
     banditEntity.Init = Initbandit;
     banditEntity.Spawn = Spawnbandit;
-    banditEntity.Done = 0;
+    banditEntity.Done = DoneBandit;
     banditEntity.Update = Updatebandit;
     banditEntity.Draw = Drawbandit;
     banditEntity.IsAlive = 0;
+    banditEntity.GetCollData = GetBanditCollData;
     banditEntity.data = p;
     AddEntity(banditEntity);
 }

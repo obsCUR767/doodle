@@ -27,7 +27,6 @@ size_t AddEntity(Entity e)
 
 void RemoveEntity(size_t index)
 {
-//    printf("removING entity %d, entity count: %d\n", index, entityCount);
 
     if (index >= entityCount)
         return;
@@ -39,7 +38,6 @@ void RemoveEntity(size_t index)
         Entities[index] = Entities[entityCount-1];
 
     entityCount--;
-//    printf("removed entity %d, entity count: %d\n", index, entityCount);
 }
 
 
@@ -52,6 +50,10 @@ void UpdateEntities(float fDeltaTime)
             RemoveEntity(i);
 
         if (Entities[i].Update) (*Entities[i].Update)(Entities[i].data, fDeltaTime);
+        for (size_t j = i; j < entityCount; j++)
+        {
+
+        }
     }
 }
 

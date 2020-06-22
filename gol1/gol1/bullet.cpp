@@ -66,7 +66,11 @@ void SpawnBullet(void* data)
 
 void DieBullet(void* data)
 {
-    free(data);
+    if (data)
+    {
+        free(data);
+        data = NULL;
+    }
 }
 
 void FireBullet(V2* pos, V2* vel, float fAngle)
@@ -83,6 +87,7 @@ void FireBullet(V2* pos, V2* vel, float fAngle)
     bulletEntity.Die = DieBullet;
     bulletEntity.IsAlive = IsAlive;
     bulletEntity.Init = InitBullet;
+    bulletEntity.Done = DieBullet;  ///AAA MUTHAFUCKAA 
     bulletEntity.Spawn = SpawnBullet;
 
 

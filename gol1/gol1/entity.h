@@ -1,9 +1,7 @@
 #pragma once
 
 #include "zmath.h"
-#define ENTITIES (1024 * 32)
-
-
+#define ENTITIES (1024)
 
 
 typedef void (*InitFunc)(void*);
@@ -14,6 +12,8 @@ typedef void (*UpdateFunc)(void*, float);
 typedef void (*DoneFunc)(void*);
 typedef void (*DieFunc)(void*);
 typedef void (*InputFunc)(void*, unsigned int, unsigned int, long);
+typedef bool (*GetCollData)(void*, void* o);
+
 
 
 
@@ -37,6 +37,7 @@ struct Entity
     DieFunc Die;
     InputFunc Input;
     IsAliveFunc IsAlive;
+    GetCollData GetCollData;
     void* data;
 };
 

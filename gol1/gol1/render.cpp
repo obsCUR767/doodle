@@ -10,10 +10,10 @@ DWORD* ib;
 size_t vpIndex(0);
 size_t ibIndex(0);
 
-M3 screenProj(true);
-M3 screenProjInv(true);
+M3 screenProj;
+M3 screenProjInv;
 M3 mWorld;
-M3 mWorldInv(true);
+M3 mWorldInv;
 size_t numLines;
 
 V3 screenOffs;
@@ -50,8 +50,18 @@ void PostDraw()
     BitBlt(hdc, 0, 0, clRSize.x, clRSize.y, hBackBufferDC, 0, 0, SRCCOPY);
 }
 
+void ResetWorldScreenMat()
+{
+    identM3(&screenProj);
+    identM3(&screenProjInv);
+    identM3(&mWorld);
+    identM3(&mWorldInv);
+}
+
 void InitRender()
 {
+    ResetWorldScreenMat();
+
     ib = (DWORD*)malloc(sizeof(DWORD) * NPOINTS);
     vpp = (POINT*)malloc(sizeof(POINT) * NPOINTS);
     vp = (POINT*)malloc(sizeof(POINT) * NPOINTS);
@@ -86,7 +96,7 @@ void ToScreen(const V3* p, LPPOINT out)
 
 void DrawV2BufImAnglePos(const V2* buf, int n, float fAngle, const V2* vPos, DWORD argb)
 {
-    M3 m;
+    M3 m; identM3(&m);
     rotm3(fAngle, &m);
     translatem3(vPos, &m);
     DrawV2BufTranIm(buf, n, &m, argb);
@@ -95,7 +105,7 @@ void DrawV2BufImAnglePos(const V2* buf, int n, float fAngle, const V2* vPos, DWO
 
 void DrawV2BufImAnglePivotPos(const V2* buf, int n, float fAngle, const V2* vPivot, const V2* vPos, DWORD argb)
 {
-    M3 m;
+    M3 m;  identM3(&m);
     V3 v; v.v2 = *vPivot; v.z = 1.0f;
     rotm3(fAngle, &m);
     mulv3xm3(&v, &m, &v);
@@ -106,7 +116,7 @@ void DrawV2BufImAnglePivotPos(const V2* buf, int n, float fAngle, const V2* vPiv
 
 void DrawV2BufImAngle(const V2* buf, int n, float fAngle, DWORD argb)
 {
-    M3 m;
+    M3 m;  identM3(&m);
     rotm3(fAngle, &m);
     DrawV2BufTranIm(buf, n, &m, argb);
 }
@@ -171,8 +181,7 @@ void Proj()
     mulv3xm3(mulv3xm3(&screenOffs, &screenProjInv, &zoomCenter), &mWorldInv, &zoomCenter);
 
     printf("zoom %f, screenOffs %f * %f, zoomCenter %f * %f\n", zoom, screenOffs.x, screenOffs.y, zoomCenter.x, zoomCenter.y);
-    M3 zoomMat;
-    zoomMat.initM3();
+    M3 zoomMat;  identM3(&zoomMat);
 
     zoomMat.a00 = zoomMat.a11 = zoom;
     zoomMat.a20 = zoomCenter.x * (1.0f - zoom);
