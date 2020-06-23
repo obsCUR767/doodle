@@ -15,6 +15,8 @@
 #include "windows.h"
 #include "windowsx.h"
 
+#include "datastruct.h"
+
 #include "zmath.h"
 #include "prim.h"
 
@@ -22,8 +24,8 @@
 #include "render.h"
 
 #include "entity.h"
-#include "player.h"
-#include "bandit.h"
+//#include "player.h"
+//#include "bandit.h"
 
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
@@ -81,27 +83,14 @@ size_t cubeIdx[] = { 0, 1 , 1, 2 , 2, 3 , 3, 0 , 4, 5 , 5, 6 , 6, 7 , 7, 4 , 0, 
 V3 mousePosV3;
 
 
+/*
 
-V2* GenWheel( int _tess, float _fRadius, size_t* nBufSize )
-{
-   V2* vbuf = (V2*)calloc( _tess + 1, sizeof( V2 ) );
-   *nBufSize = _tess + 1;
+->start -> MM ->end
+->start -> MM -> game 
 
-   V2 radius{ _fRadius, 0.0f };
-   float fAngleDelta = 2.0f * (float)M_PI / (float)_tess;
-   float fAngle = 0.0f;
 
-   for( int i = 0; i < _tess; i++ )
-   {
-      M2 m;
-      mulm2xv2( rotm2( fAngle, &m ), &radius, vbuf + i );
-      fAngle += fAngleDelta;
-   }
 
-   vbuf[_tess] = vbuf[0];
-
-   return vbuf;
-}
+*/
 
 
 void Draw( float fDeltaTime)
@@ -151,24 +140,24 @@ void Loop(HWND hwnd)
 }
 
 
+void printInt(void* _n)
+{
+    printf("%d\n", (int)_n);
+}
+
+
 void Ding()
 {
     srand((int)time(0));
 
-    int BANDITZ = 25;
-    int Q = (size_t)sqrtf((float)BANDITZ);
+    obList* l = listStartSH((void*)0);
+    for (int i = 1; i < 9; i++)
+        listInsertSH(l, (void*)i);
 
-    for (int i = 0; i < BANDITZ; i++)
-    {
-        BanditInit banditInit;
+    listIterOper(l, printInt);
 
-        banditInit.pos.x = float((i % Q) - Q/2);
-        banditInit.pos.y = float((i / Q) - Q/2);
-        banditInit.fAngle = fmodf(float(i), fM_2PI);
-        InitBanditEntity(&banditInit);
-    }
+    listClearSH(l);
 
-    InitPlayerEntity();
     InitEntities();
 
     zoom = .1f;
@@ -200,9 +189,6 @@ void main(void)
 	HWND hwnd = CreateWindow(APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 600, 300, 600, 500, GetDesktopWindow(), 0, GetModuleHandle(0), 0);
 	ShowWindow(hwnd, SHOW_OPENWINDOW);
 	UpdateWindow(hwnd);
-
-	printf("ceak!\n");
-
 
 	do
 	{

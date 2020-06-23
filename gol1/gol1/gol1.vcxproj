@@ -264,29 +264,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bandit.cpp" />
     <ClCompile Include="bench.cpp" />
-    <ClCompile Include="bullet.cpp" />
     <ClCompile Include="coll.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityEx.cpp" />
+    <ClCompile Include="GuiItem.cpp" />
     <ClCompile Include="phys.cpp" />
-    <ClCompile Include="player.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="Source.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</CompileAs>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bandit.h" />
     <ClInclude Include="bench.h" />
-    <ClInclude Include="bullet.h" />
     <ClInclude Include="coll.h" />
+    <ClInclude Include="datastruct.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="EntityEx.h" />
+    <ClInclude Include="GuiItem.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="phys.h" />
-    <ClInclude Include="player.h" />
     <ClInclude Include="prim.h" />
     <ClInclude Include="render.h" />
     <ClInclude Include="vec.h" />

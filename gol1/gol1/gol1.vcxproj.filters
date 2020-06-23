@@ -27,19 +27,16 @@
     <ClCompile Include="Entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="player.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bullet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bandit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="phys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EntityEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="coll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GuiItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,19 +62,19 @@
     <ClInclude Include="entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="player.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bullet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bandit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="phys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EntityEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="coll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="datastruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

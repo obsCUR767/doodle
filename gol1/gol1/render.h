@@ -18,6 +18,7 @@ extern HDC hdc;
 extern HDC hBackDC;
 
 #define XRGB(r, g, b) ((127 << 24) | ( r << 16 ) | ( g << 8 ) | b )
+#define DWCOL(argb) RGB((((argb) & ((1 << 24) - 1)) >> 16), (((argb) & ((1 << 16) - 1)) >> 8), (((argb) & ((1 << 8) - 1))))
 
 void PreDraw();
 void PostDraw();
@@ -25,6 +26,8 @@ void ResetWorldScreenMat();
 void InitRender();
 size_t getNumLines();
 void flushvb();
+
+
 void DrawV2BufIm(const V2* buf, int n);
 void DrawV2BufTranIm(const V2* buf, int n, M3* tran);
 void DrawV2BufTranIm(const V2* buf, int n, M3* tran, DWORD argb);
