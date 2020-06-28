@@ -30,6 +30,7 @@ struct guiGroup
     guiPage* owner;
     guiItem* children;
     size_t numChildren;
+    int selectedItemIndex;
     guiItem* selectedItem;
 
     V2 cursorPos;
@@ -57,3 +58,13 @@ struct guiManager
 };
 
 
+void DrawGuiItem(guiItem* _item);
+void DrawGuiGroup(guiGroup* _group);
+void DrawGuiPage(guiPage* _page);
+void DrawGuiManager(guiManager* _m);
+
+extern guiManager mainMenu;
+void InitGui();
+void UpdateGui(float fDeltaTime);
+void InputGui(unsigned int msg, unsigned int wparam, long lparam);
+void DrawGui();

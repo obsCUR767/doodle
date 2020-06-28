@@ -268,7 +268,7 @@
     <ClCompile Include="coll.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityEx.cpp" />
-    <ClCompile Include="GuiItem.cpp" />
+    <ClCompile Include="Gui.cpp" />
     <ClCompile Include="phys.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="Source.cpp">
@@ -281,7 +281,7 @@
     <ClInclude Include="datastruct.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="EntityEx.h" />
-    <ClInclude Include="GuiItem.h" />
+    <ClInclude Include="Gui.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="phys.h" />
     <ClInclude Include="prim.h" />

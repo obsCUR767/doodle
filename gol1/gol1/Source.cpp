@@ -24,9 +24,7 @@
 #include "render.h"
 
 #include "entity.h"
-//#include "player.h"
-//#include "bandit.h"
-
+#include "Gui.h"
 
 LPCTSTR APPWNDCLASSNAME = _T("MainAppWindow");
 
@@ -93,6 +91,7 @@ V3 mousePosV3;
 */
 
 
+
 void Draw( float fDeltaTime)
 {
    
@@ -102,9 +101,10 @@ void Draw( float fDeltaTime)
     SelectObject(hBackBufferDC, GetStockObject(DC_BRUSH));
     SetDCBrushColor(hBackBufferDC, RGB(255, 128, 0));
     SelectObject(hBackBufferDC, GetStockObject(DC_PEN));
+    SelectObject(hBackBufferDC, GetStockObject(SYSTEM_FONT));
 
     DrawEntities();
-
+    DrawGui();
     PostDraw();
 }
 
@@ -118,6 +118,7 @@ void Loop(HWND hwnd)
     Draw( fDeltaTime );
 
     UpdateEntities(fDeltaTime);
+    UpdateGui(fDeltaTime);
 
     TOCK_QUIET(tick, tock, delta);
 
@@ -140,23 +141,13 @@ void Loop(HWND hwnd)
 }
 
 
-void printInt(void* _n)
-{
-    printf("%d\n", (int)_n);
-}
-
 
 void Ding()
 {
     srand((int)time(0));
 
-    obList* l = listStartSH((void*)0);
-    for (int i = 1; i < 9; i++)
-        listInsertSH(l, (void*)i);
+    InitGui();
 
-    listIterOper(l, printInt);
-
-    listClearSH(l);
 
     InitEntities();
 
@@ -386,6 +377,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     
     InputEntities(msg, wParam, lParam);
+    InputGui(msg, wParam, lParam);
 
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }

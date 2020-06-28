@@ -36,7 +36,7 @@
     <ClCompile Include="coll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GuiItem.cpp">
+    <ClCompile Include="Gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,7 +74,7 @@
     <ClInclude Include="datastruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GuiItem.h">
+    <ClInclude Include="Gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
