@@ -171,7 +171,7 @@ void Ding()
     InitPlayerEntity();
     InitEntities();
 
-    zoom = .1f;
+    zoom = .3;
     Proj();
 }
 
@@ -185,8 +185,8 @@ void main(void)
    curr = first;
 	QueryPerformanceFrequency(&freq);
 
-    Ding();
     InitRender();
+    Ding();
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
 	wndClass.hInstance = GetModuleHandle(0);
@@ -197,7 +197,7 @@ void main(void)
 
 	RegisterClass(&wndClass);
 
-	HWND hwnd = CreateWindow(APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 600, 300, 600, 500, GetDesktopWindow(), 0, GetModuleHandle(0), 0);
+	HWND hwnd = CreateWindow(APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 400, 200, 1000, 700, GetDesktopWindow(), 0, GetModuleHandle(0), 0);
 	ShowWindow(hwnd, SHOW_OPENWINDOW);
 	UpdateWindow(hwnd);
 
@@ -246,9 +246,6 @@ void Aquire(HWND hwnd, bool banditInit = false )
     invm3( &screenProj, &screenProjInv );
 
 	printf("rect dim: %d, %d\n", clRect.bottom - clRect.top, clRect.left - clRect.right);
-
-
-//    Proj( );
 
     ReleaseDC( hwnd, hdc );
     ReleaseDC( hwnd, hBackBufferDC );

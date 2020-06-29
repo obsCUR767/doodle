@@ -17,7 +17,7 @@ M3 mWorldInv;
 size_t numLines;
 
 V3 screenOffs;
-float zoom(10.0f);
+float zoom;
 
 V2 v2Buf[NPOINTS];
 
@@ -177,7 +177,7 @@ void DrawV2BufIm(const V2* buf, int n)
 
 void Proj()
 {
-    V3 zoomCenter;
+    V3 zoomCenter = { 0.0f, 0.0f, 0.0f };
     mulv3xm3(mulv3xm3(&screenOffs, &screenProjInv, &zoomCenter), &mWorldInv, &zoomCenter);
 
     printf("zoom %f, screenOffs %f * %f, zoomCenter %f * %f\n", zoom, screenOffs.x, screenOffs.y, zoomCenter.x, zoomCenter.y);
