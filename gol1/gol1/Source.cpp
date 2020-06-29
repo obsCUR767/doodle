@@ -59,12 +59,12 @@ IndexedPrim2D iSq;
 
 
 
-V2 sq[5] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f } };
-const float TIP( 0.05f );
-const float VAL( 0.01f );
-V2 star[] =    { { 2.0f*TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
-                  { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL}, 
-                  { 2.0f * TIP, 0.0F } };
+//V2 sq[5] = { { 1.0f, 1.0f }, { 1.0f, -1.0f }, {-1.0f, -1.0f }, { -1.0f, 1.0f }, { 1.0f, 1.0f } };
+//const float TIP( 0.05f );
+//const float VAL( 0.01f );
+//V2 star[] =    { { 2.0f*TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
+//                  { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL}, 
+//                  { 2.0f * TIP, 0.0F } };
 
 V3 cubeVerts[] = {
 	{ 1.0f, 1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },
@@ -177,7 +177,7 @@ void main(void)
 
 	RegisterClass(&wndClass);
 
-	HWND hwnd = CreateWindow(APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 600, 300, 600, 500, GetDesktopWindow(), 0, GetModuleHandle(0), 0);
+	HWND hwnd = CreateWindow(APPWNDCLASSNAME, _T("Fereastra"), WS_OVERLAPPEDWINDOW, 600, 300, 1000, 800, GetDesktopWindow(), 0, GetModuleHandle(0), 0);
 	ShowWindow(hwnd, SHOW_OPENWINDOW);
 	UpdateWindow(hwnd);
 
@@ -257,7 +257,7 @@ LRESULT CALLBACK wndAppProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     screenOffs.y = 0.0f;
     screenOffs.z = 1.0f;
 
-	if (msg == WM_DESTROY || (msg == WM_KEYUP && wParam == VK_ESCAPE))
+	if (msg == WM_DESTROY )// || (msg == WM_KEYUP && wParam == VK_ESCAPE))
 	{
 
 		PostQuitMessage (0);

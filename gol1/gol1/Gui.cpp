@@ -3,14 +3,17 @@
 #include "render.h"
 
 
+float fDemoTimer = 0.0f;
+const float DEMOTIME = 10.0f;
+
 
 void DrawGuiItem(guiItem* _item)
 {
     SetDCBrushColor(hBackBufferDC, DWCOL(_item->backColor));
     SetDCPenColor(hBackBufferDC, DWCOL(_item->edgeColor));
     RECT r;
-    r.left = int((_item->parent? _item->parent->pos.x:0.0f) + _item->pos.x);
-    r.top = int((_item->parent ? _item->parent->pos.y : 0.0f) + _item->pos.y);
+    r.left = int(_item->pos.x);
+    r.top = int(_item->pos.y);
     r.right = r.left + int(_item->size.x);
     r.bottom = r.top + int(_item->size.y);
     Rectangle(hBackBufferDC, r.left, r.top, r.right, r.bottom);// (HBRUSH)GetStockObject(DC_BRUSH));
@@ -86,8 +89,8 @@ void guiSelectItem(guiGroup* _group, int itemIndex)
         return;
     }
 
-    _group->selectedItemIndex = 0;
-    _group->selectedItem = _group->children;
+    _group->selectedItemIndex = itemIndex;
+    _group->selectedItem = _group->children + itemIndex;
     _group->cursorPos    = _group->selectedItem->pos;
     _group->cursorSize   = _group->selectedItem->size;
 
@@ -112,7 +115,6 @@ void UpdateGuiGroup(guiGroup* _group, float fDeltaTime)
         float coef = LERPRATE * fDeltaTime;
         v2Add(v2cp, v2Scale(&selDiff, coef, &selDiff), &selDiff);
         (*v2cp) = selDiff;
-        printf("%f %f\n", v2cp->x, v2cp->y);
     }
     else
         *v2cp = _group->selectedItem->pos;
@@ -120,12 +122,11 @@ void UpdateGuiGroup(guiGroup* _group, float fDeltaTime)
     V2* v2cs = &_group->cursorSize;
     selDiff = _group->selectedItem->size;
     v2Sub(&selDiff, v2cs, &selDiff);
-    if (v2Len(&selDiff) > 2.0f)
+    if (v2Len(&selDiff) > 12.0f)
     {
         float coef = LERPRATE * fDeltaTime;
         v2Add(v2cs, v2Scale(&selDiff, coef, &selDiff), &selDiff);
         (*v2cs) = selDiff;
-        printf("%f %f\n", v2cs->x, v2cs->y);
     }
     else
         *v2cs = _group->selectedItem->size;
@@ -143,10 +144,30 @@ void UpdateGuiManager(guiManager* _m, float fDeltaTime)
     UpdateGuiPage(_m->pageStack + _m->top - 1, fDeltaTime);
 }
 
+void GuiPushPage(guiManager* _m, guiPage* _p)
+{
+    if (_m->top < PAGE_MAX - 1)
+    {
+        _m->pageStack[_m->top++] = *_p;
+    }
+}
+
+void GuiPopPage(guiManager* _m)
+{
+    if (_m->top > 1)
+    {
+        _m->top--;
+    }
+}
 
 void InputGuiItem(guiItem* _item, unsigned int msg, unsigned int wparam, long lparam)
 {
-
+    if (msg == WM_KEYUP)
+        if (wparam == VK_RETURN)
+        {
+            printf("Item command %d, param %d\n", _item->command, _item->lParam);
+            PostMessage(GetActiveWindow(), WM_USER, _item->command, _item->lParam);
+        }
 }
 
 void InputGuiGroup(guiGroup* _group, unsigned int msg, unsigned int wparam, long lparam)
@@ -197,6 +218,53 @@ void InputGuiPage(guiPage* _page, unsigned int msg, unsigned int wparam, long lp
 void InputGuiManager(guiManager* _manager, unsigned int msg, unsigned int wparam, long lparam)
 {
     InputGuiPage(_manager->pageStack + _manager->top - 1, msg, wparam, lparam);
+
+    if ((msg == WM_KEYUP && wparam == VK_ESCAPE))
+    {
+        GuiPopPage(_manager);
+    }
+
+    if (msg == WM_USER)
+    {
+        switch (wparam)
+        {
+            case GUI_CMD_DEMO:
+            {
+                fDemoTimer = DEMOTIME;
+                break;
+            }
+            case GUI_CMD_QUIT:
+            {
+                switch (lparam)
+                {
+                case CMD_REQUEST:
+                    GuiMessageBox("Are you sure you want to quit ?", _manager, GUI_CMD_QUIT);
+                    break;
+                case CMD_RESPONSE:
+                    break;
+                case CMD_LAUNCH:
+                    PostQuitMessage(0);
+                    break;
+                }
+                break;
+            }
+            case GUI_CMD_YES:
+            {
+                PostMessage(GetActiveWindow(), WM_USER, lparam, CMD_LAUNCH);
+                break;
+            }
+            case GUI_CMD_NO:
+            {
+                GuiPopPage(_manager);
+                break;
+            }
+            default:
+            {
+                printf("received cmd %d, param %d\n", wparam, lparam);
+                break;
+            }
+        }
+    }
 }
 
 
@@ -238,7 +306,9 @@ guiPage guiMainMenuPage, guiGameMenu, guiMsgBox;
                                                     page.group->children = (guiItem*)realloc(page.group->children, page.group->numChildren * sizeof(guiItem));             \
                                                     {                                                                                                                                                       \
                                                         guiItem* item = page.group->children + page.group->numChildren - 1;                                                           \
-                                                    
+                                                        ZeroMemory( item, sizeof( guiItem ));                                                         \
+                                                        item->lParam = CMD_REQUEST;                 \
+                                                        item->parent = page.group;           
 
 #define GUI_ITEM_END(page, group, item )            }                                                \
                                               }                                                      \
@@ -267,7 +337,7 @@ void InitGui()
             guiMainMenuPage.group->spotColor = XRGB(120, 255, 120);
             guiMainMenuPage.group->pos.x = 50.0f;
             guiMainMenuPage.group->pos.y = 50.0f;
-            guiMainMenuPage.group->size.x = 1000;
+            guiMainMenuPage.group->size.x = 700;
             guiMainMenuPage.group->size.y = 500;
 
             GUI_ITEM_BEGIN(guiMainMenuPage, group, item)
@@ -276,12 +346,12 @@ void InitGui()
                 item->backColor = XRGB(80, 180, 254);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
                 item->pos.x = 100.0f;
                 item->pos.y = 100.0f;
                 item->size.x = 300;
                 item->size.y = 50;
                 item->title = "Play!";
+                item->command = GUI_CMD_PLAY;
             }
             GUI_ITEM_END(guiMainMenuPage, group, item);
 
@@ -292,12 +362,12 @@ void InitGui()
                 item->backColor = XRGB(220, 220, 255);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
                 item->pos.x = 100.0f;
                 item->pos.y = 200.0f;
                 item->size.x = 300;
                 item->size.y = 50;
                 item->title = "Demo!";
+                item->command = GUI_CMD_DEMO;
             }
             GUI_ITEM_END(guiMainMenuPage, group, item);
 
@@ -306,12 +376,12 @@ void InitGui()
                 item->backColor = XRGB(220, 220, 255);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
                 item->pos.x = 100.0f;
                 item->pos.y = 300.0f;
                 item->size.x = 200;
                 item->size.y = 50;
                 item->title = "Quit!";
+                item->command = GUI_CMD_QUIT;
             }
             GUI_ITEM_END(guiMainMenuPage, group, item);
         }
@@ -338,12 +408,12 @@ void InitGui()
                 item->backColor = XRGB(220, 220, 255);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
                 item->pos.x = 100.0f;
                 item->pos.y = 100.0f;
                 item->size.x = 300;
                 item->size.y = 50;
                 item->title = "Resume";
+                item->command = GUI_CMD_RESUME;
             }
             GUI_ITEM_END(guiGameMenu, group, item);
 
@@ -353,12 +423,12 @@ void InitGui()
                 item->backColor = XRGB(220, 220, 255);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
                 item->pos.x = 100.0f;
                 item->pos.y = 200.0f;
                 item->size.x = 300;
                 item->size.y = 50;
                 item->title = "Quit";
+                item->command = GUI_CMD_QUIT_TOMENU;
             }
             GUI_ITEM_END(guiGameMenu, group, item);
         }
@@ -369,17 +439,18 @@ void InitGui()
 
 
 
-    GUI_PAGE_BEGIN(guiMsgBox, "zz")
+    GUI_PAGE_BEGIN(guiMsgBox, "")
     {
+        guiMsgBox.title = (char*)malloc(128 * sizeof(char));
         GUI_GROUP_BEGIN(guiMsgBox, group)
         {
             guiMsgBox.group->ori = guiGroup::Orientation::ORIZONTAL;
             guiMsgBox.group->edgeColor = XRGB(255, 255, 0);
-            guiMsgBox.group->backColor = XRGB(255, 255, 0);
-            guiMsgBox.group->pos.x = 50.0f;
-            guiMsgBox.group->pos.y = 50.0f;
-            guiMsgBox.group->size.x = 1000;
-            guiMsgBox.group->size.y = 500;
+            guiMsgBox.group->backColor = XRGB(25, 25, 0);
+            guiMsgBox.group->pos.x = 250.0f;
+            guiMsgBox.group->pos.y = 300.0f;
+            guiMsgBox.group->size.x = 500;
+            guiMsgBox.group->size.y = 150;
 
 
             GUI_ITEM_BEGIN(guiMsgBox, group, item)
@@ -388,12 +459,12 @@ void InitGui()
                 item->backColor = XRGB(220, 220, 255);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
-                item->pos.x = 100.0f;
-                item->pos.y = 200.0f;
-                item->size.x = 200;
+                item->pos.x = 400.0f;
+                item->pos.y = 350.0f;
+                item->size.x = 100;
                 item->size.y = 50;
                 item->title = "Yes";
+                item->command = GUI_CMD_YES;
             }
             GUI_ITEM_END(guiMsgBox, group, item);
 
@@ -403,12 +474,12 @@ void InitGui()
                 item->backColor = XRGB(20, 220, 255);
                 item->edgeColor = XRGB(255, 120, 255);
                 item->textColor = XRGB(0, 80, 0);
-                item->parent = NULL;
-                item->pos.x = 350.0f;
-                item->pos.y = 200.0f;
-                item->size.x = 200;
+                item->pos.x = 550.0f;
+                item->pos.y = 350.0f;
+                item->size.x = 100;
                 item->size.y = 50;
                 item->title = "No";
+                item->command = GUI_CMD_NO;
             }
             GUI_ITEM_END(guiMsgBox, group, item);
         }
@@ -417,11 +488,15 @@ void InitGui()
     GUI_PAGE_END(guiMsgBox);
 
 
-    mainMenu.pageStack[mainMenu.top++] = guiMsgBox;
+    mainMenu.modalControlActive = false;
+    GuiPushPage(&mainMenu, &guiMainMenuPage);
+//    mainMenu.pageStack[mainMenu.top++] = guiMainMenuPage;
 }
 
 void UpdateGui(float fDeltaTime)
 {
+    fDemoTimer -= fDeltaTime;
+    if (fDemoTimer < 0.0f) fDemoTimer = 0.0f;
     UpdateGuiManager(&mainMenu, fDeltaTime);
 }
 
@@ -430,9 +505,37 @@ void InputGui(unsigned int msg, unsigned int wparam, long lparam)
     InputGuiManager(&mainMenu, msg, wparam, lparam);
 }
 
+void GuiDrawDemo(float fTimer)
+{
+    const float TIP( 0.05f );
+    const float VAL( 0.01f );
+    V2 star[] =    { { 2.0f*TIP, 0.0F }, { VAL, VAL }, { 0.0f, TIP }, { -VAL, VAL }, 
+                      { -TIP, 0.0f }, { -VAL, -VAL }, { 0.0f, -TIP }, {VAL, -VAL}, 
+                      { 2.0f * TIP, 0.0F } };
+
+    float demoRatio = fDemoTimer / DEMOTIME;
+    for (int i = 0; i < (int)(100.0f * demoRatio); i++)
+    {
+        V2 pos = { -0.50f + (float)(i%10) * 0.15f, .520f + 0.5f * sinf((float)(i/10) * 0.2 + demoRatio * 5.f) };
+        SetDCBrushColor(hBackBufferDC, i * 1000);
+        DrawV2BufImAnglePos(star, 9, 10.0f * sinf(fTimer * 0.1f) + (float)i * 1.5f, &pos, XRGB(i* 10 % 255, (255-i) * 10 % 255, i*3 % 255));
+    }
+}
+
 void DrawGui()
 {
     DrawGuiManager(&mainMenu);
+    if (fDemoTimer > 0.0f)
+        GuiDrawDemo(fDemoTimer);
 //    DrawGuiItem(&item);
 }
 
+
+bool GuiMessageBox(char* _szTitle, guiManager* _gm, GUI_COMMANDS deferredCommand)
+{
+    guiMsgBox.title = _szTitle;
+    guiMsgBox.group->children[0].lParam = deferredCommand;
+    guiSelectItem(guiMsgBox.group, 1);//no
+    GuiPushPage(_gm, &guiMsgBox);
+    return true;
+}

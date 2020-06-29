@@ -7,6 +7,24 @@ struct guiItem;
 struct guiGroup;
 struct guiPage;
 
+enum GUI_COMMANDS
+{
+    GUI_CMD_PLAY = 0,
+    GUI_CMD_DEMO,
+    GUI_CMD_QUIT,
+    GUI_CMD_QUIT_TOMENU,
+    GUI_CMD_RESUME,
+    GUI_CMD_YES,
+    GUI_CMD_NO
+};
+
+enum GUI_CMD_PARAMS
+{
+    CMD_REQUEST = 1,
+    CMD_RESPONSE,
+    CMD_LAUNCH
+};
+
 struct guiItem
 {
     V2 pos;
@@ -14,6 +32,7 @@ struct guiItem
     guiGroup* parent;
     char* title;
     int command;
+    int lParam;
     DWORD backColor;
     DWORD edgeColor;
     DWORD textColor;
@@ -53,6 +72,7 @@ struct guiPage
 
 struct guiManager
 {
+    bool modalControlActive;
     guiPage pageStack[PAGE_MAX];
     size_t top;
 };
@@ -68,3 +88,5 @@ void InitGui();
 void UpdateGui(float fDeltaTime);
 void InputGui(unsigned int msg, unsigned int wparam, long lparam);
 void DrawGui();
+
+bool GuiMessageBox(char* _szTitle, guiManager* _gm, GUI_COMMANDS _cmd);
