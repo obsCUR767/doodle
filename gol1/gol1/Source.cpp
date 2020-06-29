@@ -155,7 +155,7 @@ void Ding()
 {
     srand((int)time(0));
 
-    int BANDITZ = 25;
+    int BANDITZ = 250;
     int Q = (size_t)sqrtf((float)BANDITZ);
 
     for (int i = 0; i < BANDITZ; i++)
@@ -164,14 +164,18 @@ void Ding()
 
         banditInit.pos.x = float((i % Q) - Q/2);
         banditInit.pos.y = float((i / Q) - Q/2);
-        banditInit.fAngle = fmodf(float(i), fM_2PI);
+
+        banditInit.pos.x = float(30 + i % 10) * 0.1f * sinf( float(i));
+        banditInit.pos.y = float(30 + i % 10) * 0.1f * cosf( float(i));
+
+        banditInit.fAngle = fmodf(float(i*10), fM_2PI);
         InitBanditEntity(&banditInit);
     }
 
     InitPlayerEntity();
     InitEntities();
 
-    zoom = .3;
+    zoom = .2;
     Proj();
 }
 
