@@ -60,17 +60,22 @@ void DrawGuiPage(guiPage* _page)
     SetDCBrushColor(hBackBufferDC, DWCOL(_page->group->backColor));
     SetDCPenColor(hBackBufferDC, DWCOL(_page->group->edgeColor));
     RECT r;
-    r.left = int(0);
-    r.top = int(0);
-    r.right = 600;
-    r.bottom = 100;
+    r.left = 20;
+    r.top = 0;
+    r.right = 800;
+    r.bottom = 30;
 
-    SetDCBrushColor(hBackBufferDC, XRGB( 255, 230, 128 ));
-    SetDCPenColor(hBackBufferDC, XRGB( 0, 60, 130 ));
+    SetDCBrushColor(hBackBufferDC, DWCOL(XRGB( 55, 30, 20 )));
+    SetDCPenColor(hBackBufferDC, DWCOL(XRGB( 0, 60, 130 )));
 
     FillRect(hBackBufferDC, &r, (HBRUSH)GetStockObject(DC_BRUSH));
-    SetTextColor(hBackBufferDC, XRGB(0, 60, 130));
-    DrawText(hBackBufferDC, _page->title, 0, &r, DT_CENTER);
+    Rectangle(hBackBufferDC, r.left - 2, r.top - 2, r.right + 4, r.bottom + 4); // cursor pos
+    r.left = 50;
+    SetTextColor(hBackBufferDC, DWCOL(XRGB(220, 60, 130)));
+    SetBkMode(hBackBufferDC, TRANSPARENT);
+    DrawText(hBackBufferDC, _page->title, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+
+//    DrawText(hBackBufferDC, _page->title, 0, &r, DT_CENTER);
 
     DrawGuiGroup(_page->group);
 }
@@ -203,10 +208,11 @@ void InputGuiGroup(guiGroup* _group, unsigned int msg, unsigned int wparam, long
                 }
 
         }
+
+        _group->selectedItem = _group->children + _group->selectedItemIndex;
+        printf("selectedItem %d, pos %f %f\n", _group->selectedItemIndex, _group->selectedItem->pos.x, _group->selectedItem->pos.y);
     }
 
-    _group->selectedItem = _group->children + _group->selectedItemIndex;
-    printf("selectedItem %d, pos %f %f\n", _group->selectedItemIndex, _group->selectedItem->pos.x, _group->selectedItem->pos.y);
 
     InputGuiItem(_group->selectedItem, msg, wparam, lparam);
 
@@ -514,11 +520,11 @@ void GuiDrawDemo(float fTimer)
                       { 2.0f * TIP, 0.0F } };
 
     float demoRatio = fDemoTimer / DEMOTIME;
-    for (int i = 0; i < (int)(100.0f * demoRatio); i++)
+    for (int i = 0; i < (int)(300.0f * demoRatio); i++)
     {
-        V2 pos = { -0.50f + (float)(i%10) * 0.15f, .520f + 0.5f * sinf((float)(i/10) * 0.2 + demoRatio * 5.f) };
+        V2 pos = { -0.80f + (float)(i%20) * 0.15f, .520f + 0.5f * sinf((float)(i/20) * .2 + demoRatio * 5.f) };
         SetDCBrushColor(hBackBufferDC, i * 1000);
-        DrawV2BufImAnglePos(star, 9, 10.0f * sinf(fTimer * 0.1f) + (float)i * 1.5f, &pos, XRGB(i* 10 % 255, (255-i) * 10 % 255, i*3 % 255));
+        DrawV2BufImAnglePos(star, 9, 10.0f * sinf(fTimer * 0.1f) + i, &pos, XRGB(i* 10 % 255, (255-i) * 10 % 255, i*3 % 255));
     }
 }
 

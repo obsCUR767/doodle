@@ -151,7 +151,7 @@ void Ding()
 
     InitEntities();
 
-    zoom = .1f;
+    zoom = .3f;
     Proj();
 }
 
@@ -165,8 +165,8 @@ void main(void)
    curr = first;
 	QueryPerformanceFrequency(&freq);
 
-    Ding();
     InitRender();
+    Ding();
 	WNDCLASS wndClass;
 	ZeroMemory(&wndClass, sizeof(wndClass));
 	wndClass.hInstance = GetModuleHandle(0);
